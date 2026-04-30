@@ -1,2 +1,2 @@
-# amasya
+# AZİMLİ AMASYA MÜŞTERİ BİLGİ EKRANI
 AZİMLİ AMASYA MÜŞTERİ BİLGİ EKRANI
