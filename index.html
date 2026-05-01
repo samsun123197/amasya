@@ -21,7 +21,7 @@
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
         th { background-color: #f8f9fa; width: 30%; }
-        td.bakiye-cell { font-size: 18px; white-space: nowrap; }
+        td.bakiye-cell { font-size: 20px; font-weight: bold; }
         #haritaAlani { height: 400px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; }
     </style>
 </head>
@@ -50,10 +50,8 @@
     function sorgula() {
         const input = document.getElementById('musteriKodu').value.trim().toUpperCase();
         const sonuclar = tumMusteriler.filter(m => String(m['Müşteri Kodu']).includes(input) || String(m['Müşteri Adı']).toUpperCase().includes(input));
-        
-        if (sonuclar.length === 1) {
-            detayGoster(sonuclar[0]);
-        } else if (sonuclar.length > 1) {
+        if (sonuclar.length === 1) { detayGoster(sonuclar[0]); }
+        else if (sonuclar.length > 1) {
             let listHtml = `<ul style="list-style:none; padding:0;">`;
             sonuclar.forEach(m => {
                 listHtml += `<li style="padding:10px; border:1px solid #eee; margin-bottom:5px; cursor:pointer; border-radius:8px;" onclick="hizliSec('${m['Müşteri Kodu']}')">📌 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
@@ -69,19 +67,11 @@
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
         
-        // --- Eksi Değer Uyumlu Bakiye İşleme ---
-        let hamVeri = String(m['Bakiye']).replace(/\s/g, ''); // Boşlukları sil
+        // Bakiye İşleme: Sayıya çevirmeden doğrudan hücredeki metni kullanıyoruz
+        let hamBakiye = String(m['Bakiye']).trim();
         
-        // Önce binlik ayracı olan noktayı kaldırıyoruz, sonra virgulü noktaya çeviriyoruz
-        let temizSayı = hamVeri.replace(/\./g, '').replace(',', '.');
-        let sayisalBakiye = parseFloat(temizSayı);
-        
-        let formatliBakiye;
-        if (!isNaN(sayisalBakiye)) {
-            formatliBakiye = sayisalBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
-        } else {
-            formatliBakiye = m['Bakiye'] + " TL"; 
-        }
+        // Eğer değer "-" ile başlıyorsa YEŞİL, başlamıyorsa (veya 0'dan büyükse) KIRMIZI
+        let bakiyeRengi = hamBakiye.startsWith('-') ? 'green' : 'red';
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
@@ -96,7 +86,7 @@
                     </td>
                 </tr>
                 <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
-                <tr><th>Bakiye</th><td class="bakiye-cell"><b style="color:${sayisalBakiye > 0 ? 'red' : 'green'}">${formatliBakiye}</b></td></tr>
+                <tr><th>Bakiye</th><td class="bakiye-cell" style="color:${bakiyeRengi}">${hamBakiye} TL</td></tr>
             </table>`;
         
         if (!isNaN(lat) && lat !== 0) {
