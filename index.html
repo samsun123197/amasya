@@ -8,29 +8,30 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f4f7f6; }
-        .main-container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .search-section { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        input[type="text"] { padding: 12px; width: 60%; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
-        button.sorgula-btn { padding: 12px 25px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        .action-btn { border: none; padding: 10px 15px; cursor: pointer; border-radius: 6px; font-weight: bold; color: white; text-decoration: none; font-size: 13px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; }
+        .main-container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .search-section { display: flex; gap: 10px; margin-bottom: 25px; }
+        input[type="text"] { flex-grow: 1; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
+        input[type="text"]:focus { border-color: #007bff; }
+        button.sorgula-btn { padding: 15px 30px; background-color: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; color: #555; width: 35%; }
+        .bakiye-kutusu { font-size: 24px; font-weight: bold; color: #333; }
+        .btn-group { display: flex; gap: 10px; margin-bottom: 10px; }
+        .action-btn { padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none; font-size: 14px; font-weight: bold; border: none; cursor: pointer; }
         .excel-btn { background-color: #217346; }
         .pdf-btn { background-color: #d32f2f; }
         .detay-btn { background-color: #007bff; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
-        th { background-color: #f8f9fa; width: 30%; }
-        .bakiye-deger { font-size: 22px; font-weight: bold; }
-        #haritaAlani { height: 400px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; }
+        #haritaAlani { height: 400px; margin-top: 25px; border-radius: 15px; display: none; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
 <div class="main-container">
-    <h1 style="text-align:center; color:#007bff;">Müşteri Portal</h1>
+    <h2 style="text-align:center; color:#333; margin-top:0;">Müşteri Bilgi Sistemi</h2>
     <div class="search-section">
-        <input type="text" id="musteriKodu" placeholder="Müşteri Kodu veya Adı..." onkeypress="if(event.keyCode == 13) sorgula()">
+        <input type="text" id="musteriKodu" placeholder="Müşteri kodunu veya ismini yazın..." onkeypress="if(event.keyCode == 13) sorgula()">
         <button onclick="sorgula()" class="sorgula-btn">SORGULA</button>
     </div>
     <div id="sonucAlani"></div>
@@ -42,69 +43,92 @@
     let tumMusteriler = [];
     let harita = null;
 
+    // Veriyi çek
     Papa.parse(veriDosyasiURL, {
-        download: true, header: true, skipEmptyLines: true,
-        complete: function(results) { tumMusteriler = results.data; }
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+            tumMusteriler = results.data;
+            console.log("Veri yüklendi:", tumMusteriler.length, "kayıt");
+        }
     });
 
     function sorgula() {
-        const val = document.getElementById('musteriKodu').value.trim().toUpperCase();
-        const res = tumMusteriler.filter(m => String(m['Müşteri Kodu']).includes(val) || String(m['Müşteri Adı']).toUpperCase().includes(val));
-        if (res.length === 1) { detayGoster(res[0]); }
-        else if (res.length > 1) {
-            let html = '<ul style="list-style:none; padding:0;">';
-            res.forEach(m => { html += `<li style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="hizliSec('${m['Müşteri Kodu']}')">📌 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`; });
-            document.getElementById('sonucAlani').innerHTML = html + '</ul>';
+        const arama = document.getElementById('musteriKodu').value.trim().toUpperCase();
+        if(!arama) return;
+
+        const bulunanlar = tumMusteriler.filter(m => 
+            String(m['Müşteri Kodu']).includes(arama) || 
+            String(m['Müşteri Adı']).toUpperCase().includes(arama)
+        );
+
+        if (bulunanlar.length === 1) {
+            detayGoster(bulunanlar[0]);
+        } else if (bulunanlar.length > 1) {
+            let liste = '<div style="margin-top:20px;"><strong>Birden fazla sonuç bulundu:</strong><ul style="list-style:none; padding:0; margin-top:10px;">';
+            bulunanlar.slice(0, 10).forEach(m => {
+                liste += `<li style="padding:12px; background:#fff; border:1px solid #ddd; margin-bottom:5px; border-radius:8px; cursor:pointer;" onclick="hizliSec('${m['Müşteri Kodu']}')">📍 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
+            });
+            document.getElementById('sonucAlani').innerHTML = liste + '</ul></div>';
+            document.getElementById('haritaAlani').style.display = 'none';
+        } else {
+            document.getElementById('sonucAlani').innerHTML = '<p style="color:red; text-align:center;">Müşteri bulunamadı.</p>';
         }
     }
 
-    function hizliSec(kod) { document.getElementById('musteriKodu').value = kod; sorgula(); }
+    function hizliSec(kod) {
+        document.getElementById('musteriKodu').value = kod;
+        sorgula();
+    }
 
     function detayGoster(m) {
         const mKodu = m['Müşteri Kodu'];
+        const mAdi = m['Müşteri Adı'];
+        const bakiye = m['Bakiye'] || "0,00"; // Ham metni al
+        
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
-        
-        // Ham veriyi olduğu gibi alıyoruz (En güvenli yöntem)
-        let bakiyeYazisi = m['Bakiye'] ? String(m['Bakiye']) : "0,00";
-        
-        // Sadece renk için kontrol (Eksi içeriyorsa yeşil, içermiyorsa kırmızı)
-        let bakiyeRengi = bakiyeYazisi.includes('-') ? '#28a745' : '#dc3545';
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
                 <tr>
-                    <th>Raporlar</th>
+                    <th>Rapor İşlemleri</th>
                     <td>
                         <div class="btn-group">
-                            <button onclick="ekstreIndir('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Excel</button>
-                            <button onclick="ekstreIndir('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 PDF</button>
-                            <button onclick="ozelDetayGor('${mKodu}')" class="action-btn detay-btn">🔍 Detay Gör</button>
+                            <button onclick="raporAc('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">Excel Ekstre</button>
+                            <button onclick="raporAc('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">PDF Ekstre</button>
+                            <button onclick="detayAc('${mKodu}')" class="action-btn detay-btn">Detaylı Rapor</button>
                         </div>
                     </td>
                 </tr>
-                <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
-                <tr><th>Bakiye</th><td><span class="bakiye-deger" style="color:${bakiyeRengi}">${bakiyeYazisi} TL</span></td></tr>
+                <tr><th>Müşteri Kodu</th><td><strong>${mKodu}</strong></td></tr>
+                <tr><th>Müşteri Adı</th><td><strong>${mAdi}</strong></td></tr>
+                <tr><th>Güncel Bakiye</th><td class="bakiye-kutusu">${bakiye} TL</td></tr>
             </table>`;
         
-        if (!isNaN(lat) && lat !== 0) {
+        // Harita gösterimi
+        if (!isNaN(lat) && !isNaN(lon) && lat !== 0) {
             document.getElementById('haritaAlani').style.display = 'block';
             if (harita) harita.remove();
-            harita = L.map('haritaAlani').setView([lat, lon], 15);
+            harita = L.map('haritaAlani').setView([lat, lon], 16);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
-            L.marker([lat, lon]).addTo(harita).bindPopup(m['Müşteri Adı']).openPopup();
+            L.marker([lat, lon]).addTo(harita).bindPopup(mAdi).openPopup();
+        } else {
+            document.getElementById('haritaAlani').style.display = 'none';
         }
     }
 
-    function ekstreIndir(kod, mod) {
+    function raporAc(kod, mod) {
         const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`;
         window.open(url, '_blank');
     }
 
-    function ozelDetayGor(kod) {
+    function detayAc(kod) {
         const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`20260101\`,\`YYYYMMDD\`)|1;TO_DATE(\`20261231\`,\`YYYYMMDD\`)|2;134000428026|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
         window.open(url, '_blank');
     }
 </script>
+
 </body>
 </html>
