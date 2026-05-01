@@ -98,13 +98,17 @@
         const bakiye = m['Bakiye'] || "0,00";
         const bakiyeRenk = bakiye.includes('-') ? '#28a745' : '#d32f2f';
         const dolapSayisi = m['Dolap Sayısı'] || "0";
+        const kanal = m['Kanal'] || "-";
+        const adres = m['Adres'] || "-";
         const rawLat = String(m['Enlem'] || '0').replace(',', '.').trim();
         const rawLon = String(m['Boylam'] || '0').replace(',', '.').trim();
-        const coordText = (rawLat !== '0') ? `${rawLat},${rawLon}` : 'Koordinat Tanımsız';
+        const coordText = (rawLat !== '0' && rawLat !== '') ? `${rawLat},${rawLon}` : 'Koordinat Tanımsız';
 
         let html = `
             <table>
                 <tr><th>Müşteri</th><td><strong>${mKodu}</strong><br>${m['Müşteri Adı']}</td></tr>
+                <tr><th>Kanal</th><td>${kanal}</td></tr>
+                <tr><th>Adres</th><td>${adres}</td></tr>
                 <tr><th>Bakiye</th><td class="bakiye-val" style="color:${bakiyeRenk}">${bakiye} TL</td></tr>
                 
                 <tr>
@@ -119,14 +123,14 @@
                     <th>Kopyalanacak Koordinat</th>
                     <td>
                         <span>${coordText}</span>
-                        ${rawLat !== '0' ? `<button class="copy-btn" id="btnCopy" onclick="copyToClipboard('${coordText}')">Panoya Kopyala</button>` : ''}
+                        ${coordText !== 'Koordinat Tanımsız' ? `<button class="copy-btn" id="btnCopy" onclick="copyToClipboard('${coordText}')">Panoya Kopyala</button>` : ''}
                     </td>
                 </tr>
                 
                 <tr>
                     <th>Haritada Göster</th>
                     <td>
-                        ${rawLat !== '0' ? `<a href="https://www.google.com/maps?q=${rawLat},${rawLon}" target="_blank" class="map-link">Google Haritalar'da Aç</a>` : '-'}
+                        ${coordText !== 'Koordinat Tanımsız' ? `<a href="https://www.google.com/maps?q=${rawLat},${rawLon}" target="_blank" class="map-link">Google Haritalar'da Aç</a>` : '-'}
                     </td>
                 </tr>
 
@@ -150,7 +154,7 @@
 
         document.getElementById('sonucAlani').innerHTML = html;
 
-        if(rawLat !== '0') {
+        if(coordText !== 'Koordinat Tanımsız') {
             const hDiv = document.getElementById('haritaAlani');
             hDiv.style.display = 'block';
             if(leafletMap) leafletMap.remove();
@@ -158,6 +162,8 @@
             leafletMap = L.map('haritaAlani').setView([parseFloat(rawLat), parseFloat(rawLon)], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
             L.marker([parseFloat(rawLat), parseFloat(rawLon)]).addTo(leafletMap).bindPopup(m['Müşteri Adı']).openPopup();
+        } else {
+            document.getElementById('haritaAlani').style.display = 'none';
         }
     }
 
