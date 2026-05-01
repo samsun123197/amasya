@@ -10,44 +10,77 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 15px; background-color: #f4f7f6; margin: 0; }
-        .main-container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        /* Genel Mobil Ayarları */
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; padding: 10px; background-color: #f4f7f6; margin: 0; }
         
-        h2 { color: #007bff; text-align: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .main-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+        }
         
-        .search-area { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"] { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
-        button.sorgula-btn { padding: 12px 25px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        h2 { color: #007bff; text-align: center; font-size: 1.4rem; margin-top: 10px; }
+        
+        /* Arama Alanı Mobil Uyumu */
+        .search-area { display: flex; flex-direction: row; gap: 8px; margin-bottom: 20px; }
+        input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
+        button.sorgula-btn { padding: 12px 18px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; border: 2px solid #007bff; }
-        th, td { padding: 12px 15px; border: 1px solid #dee2e6; text-align: left; }
-        th { background-color: #f8f9fa; width: 35%; color: #333; }
+        /* Tablo Mobil Görünümü */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #007bff; background: #fff; }
+        th, td { padding: 12px 10px; border: 1px solid #dee2e6; text-align: left; font-size: 14px; }
+        th { background-color: #f8f9fa; width: 40%; color: #333; font-weight: 600; }
         
-        .bakiye-val { font-size: 22px; font-weight: bold; font-family: 'Courier New', monospace; }
+        .bakiye-val { font-size: 18px; font-weight: bold; font-family: 'Courier New', monospace; }
         
-        .copy-btn { background-color: #007bff; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 13px; margin-left: 10px; }
-        .map-link { color: #007bff; font-weight: bold; text-decoration: none; }
-        .dolap-detay { margin-left: 10px; font-weight: bold; color: #dc3545; text-decoration: none; }
+        /* Butonlar ve Linkler */
+        .copy-btn { background-color: #007bff; color: white; border: none; padding: 8px 10px; cursor: pointer; border-radius: 6px; font-size: 12px; margin-top: 5px; display: inline-block; }
+        .map-link { color: #007bff; font-weight: bold; text-decoration: none; display: inline-block; padding: 5px 0; }
+        .dolap-detay { margin-left: 5px; font-weight: bold; color: #dc3545; text-decoration: none; font-size: 15px; }
 
-        .btn-group { display: flex; gap: 8px; }
-        .action-btn { padding: 8px 12px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; text-decoration: none; text-align: center; flex: 1; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .action-btn { 
+            padding: 12px; 
+            border: none; 
+            border-radius: 8px; 
+            color: white; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 14px; 
+            text-decoration: none; 
+            text-align: center; 
+            flex: 1; 
+            min-width: 120px; /* Mobilde yan yana sığmazsa alta geçer */
+        }
         .excel-bg { background-color: #217346; }
         .pdf-bg { background-color: #d32f2f; }
-        .detay-bg { background-color: #007bff; display: block; width: 100%; }
+        .detay-bg { background-color: #007bff; width: 100%; display: block; margin-bottom: 5px; }
 
-        #haritaAlani { height: 400px; margin-top: 25px; border: 2px solid #007bff; border-radius: 8px; display: none; }
+        /* Harita Mobil Yüksekliği */
+        #haritaAlani { height: 300px; margin-top: 20px; border: 1px solid #007bff; border-radius: 8px; display: none; }
         
-        .liste-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; color: #007bff; }
-        .liste-item:hover { background-color: #f0f7ff; }
+        .liste-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; color: #007bff; font-weight: 500; }
+        .liste-item:active { background-color: #e8f0fe; }
+
+        /* Ekran Genişliği Azaldıkça Font Ayarı */
+        @media (max-width: 480px) {
+            th, td { font-size: 13px; padding: 10px 8px; }
+            .bakiye-val { font-size: 16px; }
+            h2 { font-size: 1.2rem; }
+        }
     </style>
 </head>
 <body>
 
 <div class="main-container">
-    <h2>Müşteri Bilgi Sorgulama</h2>
+    <h2>Müşteri Bilgi Portalı</h2>
     
     <div class="search-area">
-        <input type="text" id="searchInput" placeholder="Müşteri kodu veya adı yazın..." onkeypress="if(event.keyCode == 13) sorgula()">
+        <input type="text" id="searchInput" placeholder="Kod veya isim..." onkeypress="if(event.keyCode == 13) sorgula()">
         <button onclick="sorgula()" class="sorgula-btn">Sorgula</button>
     </div>
 
@@ -77,14 +110,14 @@
         if (filtered.length === 1) {
             renderMusteri(filtered[0]);
         } else if (filtered.length > 1) {
-            let listHtml = '<div style="border:1px solid #ccc; border-radius:6px; overflow:hidden;">';
-            filtered.slice(0, 12).forEach(m => {
+            let listHtml = '<div style="border:1px solid #ccc; border-radius:8px; overflow:hidden;">';
+            filtered.slice(0, 15).forEach(m => {
                 listHtml += `<div class="liste-item" onclick="selectAndSearch('${m['Müşteri Kodu']}')">${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</div>`;
             });
             document.getElementById('sonucAlani').innerHTML = listHtml + '</div>';
             document.getElementById('haritaAlani').style.display = 'none';
         } else {
-            document.getElementById('sonucAlani').innerHTML = '<p style="color:red; font-weight:bold;">Müşteri bulunamadı.</p>';
+            document.getElementById('sonucAlani').innerHTML = '<p style="color:red; font-weight:bold; text-align:center;">Müşteri bulunamadı.</p>';
         }
     }
 
@@ -112,17 +145,17 @@
                 <tr><th>Bakiye</th><td class="bakiye-val" style="color:${bakiyeRenk}">${bakiye} TL</td></tr>
                 
                 <tr>
-                    <th>Dolap Sayısı</th>
+                    <th>Dolap Bilgisi</th>
                     <td>
-                        ${dolapSayisi} 
-                        <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" class="dolap-detay">[Detay]</a>
+                        <b>${dolapSayisi} Adet</b> 
+                        <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" class="dolap-detay">[Detay Gör]</a>
                     </td>
                 </tr>
 
                 <tr>
                     <th>Satış Analizi</th>
                     <td>
-                        <button class="action-btn detay-bg" onclick="openDetail('${mKodu}')">Satış Detaylarını Görüntüle</button>
+                        <button class="action-btn detay-bg" onclick="openDetail('${mKodu}')">Analiz Raporu Aç</button>
                     </td>
                 </tr>
 
@@ -130,24 +163,20 @@
                     <th>Cari İşlemler</th>
                     <td>
                         <div class="btn-group">
-                            <button class="action-btn excel-bg" onclick="openReport('${mKodu}', 'ExportToExcel')">Excel Ekstre</button>
-                            <button class="action-btn pdf-bg" onclick="openReport('${mKodu}', 'ExportToPDF')">PDF Ekstre</button>
+                            <button class="action-btn excel-bg" onclick="openReport('${mKodu}', 'ExportToExcel')">Excel</button>
+                            <button class="action-btn pdf-bg" onclick="openReport('${mKodu}', 'ExportToPDF')">PDF</button>
                         </div>
                     </td>
                 </tr>
 
                 <tr>
-                    <th>Kopyalanacak Koordinat</th>
+                    <th>Konum İşlemi</th>
                     <td>
-                        <span>${coordText}</span>
-                        ${coordText !== 'Koordinat Tanımsız' ? `<button class="copy-btn" id="btnCopy" onclick="copyToClipboard('${coordText}')">Panoya Kopyala</button>` : ''}
-                    </td>
-                </tr>
-                
-                <tr>
-                    <th>Haritada Göster</th>
-                    <td>
-                        ${coordText !== 'Koordinat Tanımsız' ? `<a href="https://www.google.com/maps?q=${rawLat},${rawLon}" target="_blank" class="map-link">Google Haritalar'da Aç</a>` : '-'}
+                        <span style="display:block; margin-bottom:5px;">${coordText}</span>
+                        ${coordText !== 'Koordinat Tanımsız' ? `
+                            <button class="copy-btn" id="btnCopy" onclick="copyToClipboard('${coordText}')">Koordinatı Kopyala</button><br>
+                            <a href="https://www.google.com/maps?q=${rawLat},${rawLon}" target="_blank" class="map-link">📍 Haritalarda Aç</a>
+                        ` : '-'}
                     </td>
                 </tr>
             </table>
@@ -160,7 +189,7 @@
             hDiv.style.display = 'block';
             if(leafletMap) leafletMap.remove();
             
-            leafletMap = L.map('haritaAlani').setView([parseFloat(rawLat), parseFloat(rawLon)], 15);
+            leafletMap = L.map('haritaAlani', { dragging: !L.Browser.mobile, tap: !L.Browser.mobile }).setView([parseFloat(rawLat), parseFloat(rawLon)], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
             L.marker([parseFloat(rawLat), parseFloat(rawLon)]).addTo(leafletMap).bindPopup(m['Müşteri Adı']).openPopup();
         } else {
@@ -172,7 +201,7 @@
         navigator.clipboard.writeText(text).then(() => {
             const btn = document.getElementById('btnCopy');
             btn.textContent = 'Kopyalandı!';
-            setTimeout(() => btn.textContent = 'Panoya Kopyala', 1500);
+            setTimeout(() => btn.textContent = 'Koordinatı Kopyala', 1500);
         });
     }
 
