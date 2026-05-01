@@ -3,76 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Müşteri Portal</title>
+    <title>Golf Müşteri Portal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 10px; background-color: #f4f7f6; margin: 0; }
-        .main-container { max-width: 900px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        :root { --primary: #007bff; --success: #28a745; --danger: #d32f2f; --info: #17a2b8; --dark: #343a40; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 10px; background-color: #f0f2f5; margin: 0; color: var(--dark); }
+        .main-container { max-width: 900px; margin: 0 auto; background: white; padding: 15px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         
         .search-section { display: flex; gap: 8px; margin-bottom: 20px; }
-        input[type="text"] { flex-grow: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.3s; }
-        input[type="text"]:focus { border-color: #28a745; }
+        input[type="text"] { flex-grow: 1; padding: 14px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 16px; outline: none; }
+        input[type="text"]:focus { border-color: var(--success); }
+        button.sorgula-btn { padding: 0 25px; background-color: var(--success); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; }
         
-        button.sorgula-btn { padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .info-card { background: #fff; border: 1px solid #edf2f7; border-radius: 12px; overflow: hidden; margin-top: 15px; }
+        .info-header { background: #f8f9fa; padding: 10px 15px; border-bottom: 1px solid #edf2f7; font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase; }
+        .info-body { padding: 15px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
-        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; word-wrap: break-word; }
-        th { background-color: #f8f9fa; width: 35%; color: #666; font-size: 14px; }
+        .bakiye-container { text-align: center; padding: 5px 0; }
+        .bakiye-metin { font-size: 26px !important; font-weight: 800 !important; font-family: 'Courier New', monospace !important; margin: 0; display: inline-block; }
         
-        .bakiye-metin { 
-            font-size: 22px !important; 
-            font-weight: bold !important; 
-            font-family: monospace !important;
-            margin: 0;
-            display: inline-block;
-        }
-
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        .action-btn { 
-            flex: 1 1 calc(50% - 8px); /* Mobilde yan yana iki buton */
-            padding: 12px 8px; 
-            border-radius: 8px; 
-            color: white; 
-            text-decoration: none; 
-            font-size: 12px; 
-            font-weight: bold; 
-            border: none; 
-            cursor: pointer; 
-            text-align: center;
-        }
+        /* Buton Grupları */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .action-btn { padding: 12px 5px; border-radius: 10px; color: white; text-decoration: none; font-size: 12px; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        
         .excel-btn { background-color: #217346; }
-        .pdf-btn { background-color: #d32f2f; }
-        .detay-btn { background-color: #007bff; flex: 1 1 100%; } /* Detay butonu mobilde tam satır */
-        
-        #haritaAlani { height: 300px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; width: 100%; }
-        
-        .sonuc-liste { background:#fff; border:1px solid #ddd; border-radius:8px; padding:5px; margin-top: 10px; }
-        .sonuc-item { padding:15px; border-bottom:1px solid #eee; cursor:pointer; list-style: none; font-size: 14px; }
-        .sonuc-item:last-child { border-bottom: none; }
+        .pdf-btn { background-color: var(--danger); }
+        .detay-btn { background-color: var(--primary); grid-column: span 2; font-size: 14px; margin-top: 5px; }
+        .coord-btn { background-color: var(--info); }
+        .map-btn { background-color: var(--dark); }
 
-        /* Mobil Ekran Düzenlemeleri */
-        @media (max-width: 600px) {
-            body { padding: 5px; }
-            .main-container { border-radius: 0; padding: 15px 10px; }
-            th { width: 40%; font-size: 13px; }
-            td { font-size: 14px; }
-            .bakiye-metin { font-size: 20px !important; }
-            button.sorgula-btn { padding: 12px 15px; }
-        }
+        #haritaAlani { height: 300px; margin-top: 15px; border-radius: 12px; display: none; border: 1px solid #ddd; }
+        .yol-tarifi { display: block; text-align: center; margin: 10px 0; color: var(--primary); text-decoration: none; font-weight: bold; font-size: 14px; }
+
+        .sonuc-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; list-style: none; display: flex; justify-content: space-between; }
+        .copy-notif { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; display: none; z-index: 9999; }
     </style>
 </head>
 <body>
 
+<div id="bildirim" class="copy-notif">Koordinat Kopyalandı!</div>
+
 <div class="main-container">
-    <h2 style="text-align:center; color: #333; margin-bottom: 20px; font-size: 20px;">Müşteri Bilgi Sistemi</h2>
+    <h3 style="text-align:center; margin-bottom: 15px;">Golf Müşteri Portal</h3>
     <div class="search-section">
-        <input type="text" id="musteriKodu" placeholder="Kod veya İsim..." onkeypress="if(event.keyCode == 13) sorgula()">
+        <input type="text" id="musteriKodu" placeholder="Kod veya isim yazın..." onkeypress="if(event.keyCode == 13) sorgula()">
         <button onclick="sorgula()" class="sorgula-btn">ARA</button>
     </div>
     <div id="sonucAlani"></div>
     <div id="haritaAlani"></div>
+    <div id="altAlan"></div>
 </div>
 
 <script>
@@ -93,14 +74,13 @@
         if (bulunanlar.length === 1) {
             detayGoster(bulunanlar[0]);
         } else if (bulunanlar.length > 1) {
-            let html = '<div class="sonuc-liste"><strong>Sonuçlar:</strong><ul style="padding:0; margin:0;">';
+            let html = '<div class="info-card"><div class="info-header">Sonuçlar</div>';
             bulunanlar.slice(0, 15).forEach(m => {
-                html += `<li class="sonuc-item" onclick="hizliSec('${m['Müşteri Kodu']}')">📍 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
+                html += `<div class="sonuc-item" onclick="hizliSec('${m['Müşteri Kodu']}')"><span><b>${m['Müşteri Kodu']}</b> ${m['Müşteri Adı']}</span><span>❯</span></div>`;
             });
-            document.getElementById('sonucAlani').innerHTML = html + '</ul></div>';
+            document.getElementById('sonucAlani').innerHTML = html + '</div>';
             document.getElementById('haritaAlani').style.display = 'none';
-        } else {
-            document.getElementById('sonucAlani').innerHTML = '<p style="color:red; text-align:center; padding:20px;">Müşteri bulunamadı.</p>';
+            document.getElementById('altAlan').innerHTML = '';
         }
     }
 
@@ -109,49 +89,70 @@
     function detayGoster(m) {
         const mKodu = m['Müşteri Kodu'];
         const bakiyeHam = m['Bakiye'] ? String(m['Bakiye']).trim() : "0,00";
-        const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
-        const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
+        const lat = m['Enlem'] ? String(m['Enlem']).replace(',', '.') : "0";
+        const lon = m['Boylam'] ? String(m['Boylam']).replace(',', '.') : "0";
         const renk = bakiyeHam.startsWith('-') ? '#28a745' : '#d32f2f';
 
         document.getElementById('sonucAlani').innerHTML = `
-            <table>
-                <tr>
-                    <th>İşlemler</th>
-                    <td>
-                        <div class="btn-group">
-                            <button onclick="linkAc('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Excel Ekstre</button>
-                            <button onclick="linkAc('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 PDF Ekstre</button>
-                            <button onclick="detayAc('${mKodu}')" class="action-btn detay-btn">🔍 Satış Detay</button>
-                        </div>
-                    </td>
-                </tr>
-                <tr><th>Müşteri No</th><td><b>${mKodu}</b></td></tr>
-                <tr><th>Müşteri Adı</th><td><b>${m['Müşteri Adı']}</b></td></tr>
-                <tr>
-                    <th>Bakiye</th>
-                    <td>
-                        <pre class="bakiye-metin" style="color:${renk}">${bakiyeHam} TL</pre>
-                    </td>
-                </tr>
-            </table>`;
+            <div class="info-card">
+                <div class="info-header">Müşteri Bilgisi</div>
+                <div class="info-body">
+                    <b>${mKodu} - ${m['Müşteri Adı']}</b>
+                    <div class="btn-group" style="grid-template-columns: 1fr 1fr; margin-top:12px;">
+                        <button onclick="kopya('${lat},${lon}')" class="action-btn coord-btn">📋 Koordinat Kopya</button>
+                        <button onclick="haritayaGit(${lat},${lon})" class="action-btn map-btn">📍 Haritada Göster</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-header">Bakiye</div>
+                <div class="info-body bakiye-container">
+                    <pre class="bakiye-metin" style="color:${renk}">${bakiyeHam} TL</pre>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button onclick="linkAc('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Excel Ekstre</button>
+                <button onclick="linkAc('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 PDF Ekstre</button>
+                <button onclick="detayAc('${mKodu}')" class="action-btn detay-btn">🔍 Satış Detaylarını Gör</button>
+            </div>
+        `;
         
-        if (!isNaN(lat) && lat !== 0) {
-            document.getElementById('haritaAlani').style.display = 'block';
-            if (harita) harita.remove();
-            harita = L.map('haritaAlani', { dragging: !L.Browser.mobile, tap: !L.Browser.mobile }).setView([lat, lon], 15);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
-            L.marker([lat, lon]).addTo(harita).bindPopup(m['Müşteri Adı']).openPopup();
+        const nLat = parseFloat(lat);
+        const nLon = parseFloat(lon);
+        if (!isNaN(nLat) && nLat !== 0) {
+            document.getElementById('altAlan').innerHTML = `
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${nLat},${nLon}" target="_blank" class="yol-tarifi">
+                    🚗 Google Haritalar'da Yol Tarifi Al
+                </a>`;
         }
     }
 
+    function kopya(metin) {
+        navigator.clipboard.writeText(metin);
+        const b = document.getElementById('bildirim');
+        b.style.display = 'block';
+        setTimeout(() => b.style.display = 'none', 2000);
+    }
+
+    function haritayaGit(lat, lon) {
+        if (!lat || lat == 0) return;
+        const hAlan = document.getElementById('haritaAlani');
+        hAlan.style.display = 'block';
+        if (harita) harita.remove();
+        harita = L.map('haritaAlani').setView([lat, lon], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
+        L.marker([lat, lon]).addTo(harita).openPopup();
+        hAlan.scrollIntoView({ behavior: 'smooth' });
+    }
+
     function linkAc(kod, mod) {
-        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`;
-        window.open(url, '_blank');
+        window.open(`https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`, '_blank');
     }
 
     function detayAc(kod) {
-        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`20260101\`,\`YYYYMMDD\`)|1;TO_DATE(\`20261231\`,\`YYYYMMDD\`)|2;134000428026|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
-        window.open(url, '_blank');
+        window.open(`https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`20260101\`,\`YYYYMMDD\`)|1;TO_DATE(\`20261231\`,\`YYYYMMDD\`)|2;134000428026|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`, '_blank');
     }
 </script>
 </body>
