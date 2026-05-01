@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Müşteri Bilgi Sorgulama - GitHub Pages</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Müşteri Bilgi Sorgulama - Amasya</title>
     
+    <!-- Harici Kütüphaneler -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -14,210 +15,231 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             padding: 20px; 
             background-color: #f4f7f6;
+            color: #333;
+        }
+        .main-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
         h1 {
             color: #007bff;
             border-bottom: 2px solid #007bff;
             padding-bottom: 10px;
+            text-align: center;
         }
-        
-        input[type="text"], button {
-            padding: 10px;
-            border-radius: 5px;
-            margin-right: 10px;
-            border: 1px solid #ccc;
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        input[type="text"] {
+            padding: 12px;
+            width: 60%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
             font-size: 16px;
         }
         button.sorgula-btn {
+            padding: 12px 25px;
             background-color: #28a745;
             color: white;
             border: none;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            font-weight: bold;
+            transition: 0.3s;
         }
         button.sorgula-btn:hover { background-color: #218838; }
 
-        .btn-group { display: flex; gap: 10px; margin-bottom: 5px; }
-        .download-btn {
+        /* Buton Grupları */
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .action-btn {
             border: none;
-            padding: 8px 12px;
+            padding: 10px 15px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: bold;
             font-size: 13px;
-        }
-        .excel-btn { background-color: #217346; color: white; }
-        .pdf-btn { background-color: #d32f2f; color: white; }
-
-        .copy-btn {
-            background-color: #007bff;
             color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            margin-left: 10px;
-            font-size: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
-        
-        #sonucAlani table {
-            border: 2px solid #007bff;
-            border-collapse: collapse;
+        .excel-btn { background-color: #217346; }
+        .pdf-btn { background-color: #d32f2f; }
+        .txt-btn { background-color: #607d8b; }
+        .copy-btn { background-color: #007bff; font-size: 11px; padding: 5px 8px; }
+
+        /* Tablo Tasarımı */
+        table {
             width: 100%;
+            border-collapse: collapse;
             margin: 20px 0;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        #sonucAlani th, #sonucAlani td {
+        th, td {
             padding: 12px 15px;
-            border: 1px solid #dee2e6;
+            border-bottom: 1px solid #eee;
             text-align: left;
         }
-        #sonucAlani tr:nth-child(even) { background-color: #f8f9fa; }
-        #sonucAlani strong { font-weight: bold; color: #333; }
+        th { background-color: #f8f9fa; width: 30%; color: #555; }
         
-        #yukleniyor { color: orange; font-style: italic; }
-        .hata { color: red; font-weight: bold; }
-
         #haritaAlani {
             height: 400px; 
-            margin-top: 30px; 
-            border: 2px solid #007bff; 
-            border-radius: 8px;
+            margin-top: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 12px;
+            z-index: 1;
         }
-        ul { list-style: none; padding: 0; }
-        li { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }
-        li a { text-decoration: none; color: #007bff; font-weight: bold; }
+        .loading { color: orange; font-style: italic; text-align: center; }
+        .error { color: red; font-weight: bold; text-align: center; }
+        
+        /* Liste Tasarımı */
+        .musteri-listesi { list-style: none; padding: 0; }
+        .musteri-listesi li {
+            padding: 12px;
+            background: #fff;
+            border: 1px solid #eee;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .musteri-listesi li:hover { background: #eef6ff; border-color: #007bff; }
     </style>
 </head>
 <body>
-    <h1>Müşteri Bilgi Sorgulama</h1>
+
+<div class="main-container">
+    <h1>Müşteri Portal - Amasya</h1>
     
-    <label for="musteriKodu">Arama Yapın (Kod veya Ad):</label>
-    <input type="text" id="musteriKodu" placeholder="Müşteri Kodu veya Adı Girin" onkeypress="if(event.keyCode == 13) sorgula()">
-    <button onclick="sorgula()" class="sorgula-btn">Sorgula</button>
+    <div class="search-section">
+        <input type="text" id="musteriKodu" placeholder="Müşteri Kodu veya Adı Giriniz..." onkeypress="if(event.keyCode == 13) sorgula()">
+        <button onclick="sorgula()" class="sorgula-btn">SORGULA</button>
+    </div>
 
-    <p id="yukleniyor">Veriler Google Sheets'ten yükleniyor, lütfen bekleyiniz...</p>
+    <p id="yukleniyor" class="loading">Veriler senkronize ediliyor, lütfen bekleyiniz...</p>
 
-    <hr>
-    <h2>Sorgu Sonucu</h2>
     <div id="sonucAlani"></div>
-    <div id="haritaAlani"></div>
+    <div id="haritaAlani" style="display:none;"></div>
+</div>
 
-    <script>
-        const veriDosyasiURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRkONEBGWF-u3K_tU6kNvsHUpO9LUx_ZDUCvy_SCCcjWh0K7jnmGeynwM9XAUwwww/pub?output=csv';
-        let tumMusteriler = [];
-        let harita = null; 
-        
-        const ciktiAlanlari = [
-            "Müşteri Kodu", "Müşteri Adı", "Enlem", "Boylam", "Durumu", 
-            "Gsm", "Kanal", "Tip", "Alt Tip", "Adres", 
-            "İli", "İlçesi", "Dolap Sayısı", "Rutta mı", "Satışa Kapalımı", "Bakiye"
-        ];
-        
-        function ekstreIndir(musteriKodu, mod) {
-            const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${musteriKodu}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`;
-            window.open(url, '_blank');
+<script>
+    const veriDosyasiURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRkONEBGWF-u3K_tU6kNvsHUpO9LUx_ZDUCvy_SCCcjWh0K7jnmGeynwM9XAUwwww/pub?output=csv';
+    let tumMusteriler = [];
+    let harita = null; 
+
+    // Google Sheets'ten verileri çek
+    Papa.parse(veriDosyasiURL, {
+        download: true,
+        header: true,
+        complete: function(results) {
+            tumMusteriler = results.data;
+            document.getElementById('yukleniyor').style.display = 'none';
         }
+    });
 
-        function panoyaKopyala(metin, elementId) {
-            navigator.clipboard.writeText(metin).then(() => {
-                const button = document.getElementById(elementId);
-                button.textContent = 'Kopyalandı!';
-                setTimeout(() => { button.textContent = 'Panoya Kopyala'; }, 1500);
+    function sorgula() {
+        const input = document.getElementById('musteriKodu').value.trim().toUpperCase();
+        const sonucDiv = document.getElementById('sonucAlani');
+        const haritaDiv = document.getElementById('haritaAlani');
+        
+        if (!input) return;
+
+        const sonuclar = tumMusteriler.filter(m => 
+            String(m['Müşteri Kodu']).includes(input) || 
+            String(m['Müşteri Adı']).toUpperCase().includes(input)
+        );
+
+        if (sonuclar.length === 1) {
+            detayGoster(sonuclar[0]);
+        } else if (sonuclar.length > 1) {
+            haritaDiv.style.display = 'none';
+            let listHtml = `<p class="error">${sonuclar.length} kayıt bulundu. Lütfen seçiniz:</p><ul class="musteri-listesi">`;
+            sonuclar.forEach(m => {
+                listHtml += `<li onclick="hizliSec('${m['Müşteri Kodu']}')">📌 <b>${m['Müşteri Kodu']}</b> - ${m['Müşteri Adı']}</li>`;
             });
+            sonucDiv.innerHTML = listHtml + '</ul>';
+        } else {
+            sonucDiv.innerHTML = `<p class="error">Müşteri bulunamadı.</p>`;
+            haritaDiv.style.display = 'none';
         }
-        
-        Papa.parse(veriDosyasiURL, {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
-                tumMusteriler = results.data;
-                document.getElementById('yukleniyor').style.display = 'none';
-            }
+    }
+
+    function hizliSec(kod) {
+        document.getElementById('musteriKodu').value = kod;
+        sorgula();
+    }
+
+    function detayGoster(m) {
+        const sonucDiv = document.getElementById('sonucAlani');
+        const haritaDiv = document.getElementById('haritaAlani');
+        const mKodu = m['Müşteri Kodu'];
+
+        // Koordinat İşleme
+        const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
+        const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
+
+        let html = `<table>
+            <tr><th>Raporlar</th><td>
+                <div class="btn-group">
+                    <button onclick="ekstreIndir('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Ekstre (Excel)</button>
+                    <button onclick="ekstreIndir('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 Ekstre (PDF)</button>
+                    <button onclick="satisDetayIndir('${mKodu}')" class="action-btn txt-btn">📥 Satış Detay (TXT)</button>
+                </div>
+            </td></tr>
+            <tr><th>Müşteri Bilgisi</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
+            <tr><th>Gsm</th><td><a href="tel:${m['Gsm']}">${m['Gsm'] || '-'}</a></td></tr>
+            <tr><th>Adres</th><td>${m['Adres'] || '-'} / ${m['İlçesi'] || ''}</td></tr>
+            <tr><th>Dolap Sayısı</th><td>${m['Dolap Sayısı'] || '0'} <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" style="margin-left:10px; color:red;">[Detay]</a></td></tr>
+            <tr><th>Bakiye</th><td><b style="color:${parseFloat(m['Bakiye']) > 0 ? 'red' : 'green'}">${m['Bakiye']} TL</b></td></tr>`;
+
+        if (!isNaN(lat) && lat !== 0) {
+            html += `<tr><th>Konum</th><td>
+                <button class="action-btn copy-btn" onclick="panoyaKopyala('${lat},${lon}', this)">Koordinat Kopyala</button>
+                <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" style="margin-left:10px; font-weight:bold; color:#007bff;">Maps'te Aç</a>
+            </td></tr>`;
+            haritaDiv.style.display = 'block';
+            setupMap(lat, lon, m['Müşteri Adı']);
+        } else {
+            haritaDiv.style.display = 'none';
+        }
+
+        html += `</table>`;
+        sonucDiv.innerHTML = html;
+    }
+
+    function setupMap(lat, lon, isim) {
+        if (harita) harita.remove();
+        harita = L.map('haritaAlani').setView([lat, lon], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
+        L.marker([lat, lon]).addTo(harita).bindPopup(isim).openPopup();
+    }
+
+    function ekstreIndir(kod, mod) {
+        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`;
+        window.open(url, '_blank');
+    }
+
+    function satisDetayIndir(kod) {
+        // Senin verdiğin TXT indirme linki (Dinamik müşteri kodlu)
+        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE('20260101','YYYYMMDD')|1;TO_DATE('20261231','YYYYMMDD')|2;134010607746|13;|14;|15;|6;|10;'${kod}'|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToTXT&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
+        window.open(url, '_blank');
+    }
+
+    function panoyaKopyala(metin, btn) {
+        navigator.clipboard.writeText(metin).then(() => {
+            const originalText = btn.innerText;
+            btn.innerText = 'Kopyalandı!';
+            setTimeout(() => { btn.innerText = originalText; }, 2000);
         });
+    }
+</script>
 
-        function sorgula() {
-            const kodInput = document.getElementById('musteriKodu');
-            const aramaMetni = kodInput.value.trim().toUpperCase();
-            const sonucDiv = document.getElementById('sonucAlani');
-            const haritaDiv = document.getElementById('haritaAlani');
-            
-            haritaDiv.innerHTML = '';
-            if (aramaMetni === "") return;
-
-            const eslesenMusteriler = tumMusteriler.filter(m => {
-                const kod = String(m['Müşteri Kodu'] || '').toUpperCase();
-                const ad = String(m['Müşteri Adı'] || '').toUpperCase();
-                return kod.includes(aramaMetni) || ad.includes(aramaMetni);
-            });
-            
-            if (eslesenMusteriler.length === 1) {
-                const m = eslesenMusteriler[0];
-                const enlemStr = String(m['Enlem']).replace(',', '.').trim();
-                const boylamStr = String(m['Boylam']).replace(',', '.').trim();
-                const lat = parseFloat(enlemStr);
-                const lon = parseFloat(boylamStr);
-                const mKodu = m['Müşteri Kodu'];
-
-                const koordinatMetni = (!isNaN(lat) && !isNaN(lon) && lat !== 0 && lon !== 0) ? `${lat},${lon}` : 'Koordinat Yok/Hatalı';
-                
-                let html = '<table><thead><tr><th>Alan Adı</th><th>Değer</th></tr></thead><tbody>';
-                
-                // Cari Ekstre Butonları
-                html += `<tr><td><strong>Cari Ekstre</strong></td><td>
-                    <div class="btn-group">
-                        <button onclick="ekstreIndir('${mKodu}', 'ExportToExcel')" class="download-btn excel-btn">📊 Excel</button>
-                        <button onclick="ekstreIndir('${mKodu}', 'ExportToPDF')" class="download-btn pdf-btn">📄 PDF</button>
-                    </div>
-                </td></tr>`;
-
-                ciktiAlanlari.forEach(alan => {
-                    let deger = m[alan] !== undefined && m[alan] !== null ? m[alan] : '-';
-                    
-                    // Rutta mı ve Satışa Kapalı mı Dönüşümleri
-                    if (alan === 'Rutta mı' || alan === 'Satışa Kapalımı') {
-                        deger = (deger == 1 || deger == '1' || deger == '1,00') ? 'Evet' : 'Hayır';
-                    }
-
-                    if (alan === 'Dolap Sayısı') {
-                        const link = `https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}`;
-                        html += `<tr><td><strong>${alan}</strong></td><td>${deger} <a href="${link}" target="_blank" style="margin-left: 10px; font-weight: bold; color: #dc3545; text-decoration: none;">[Detay]</a></td></tr>`;
-                    } else {
-                        html += `<tr><td><strong>${alan}</strong></td><td>${deger}</td></tr>`;
-                    }
-                });
-                
-                // ✨ Kopyalanacak Koordinat ve Harita Linki Kısımları
-                if (koordinatMetni !== 'Koordinat Yok/Hatalı') {
-                     html += `<tr><td><strong>Kopyalanacak Koordinat</strong></td><td>
-                        <span>${koordinatMetni}</span>
-                        <button class="copy-btn" id="copyButton" onclick="panoyaKopyala('${koordinatMetni}', 'copyButton')">Panoya Kopyala</button>
-                     </td></tr>`;
-                     
-                     const mapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
-                     html += `<tr><td><strong>Haritada Göster</strong></td><td><a href="${mapsUrl}" target="_blank" style="color: #007bff; font-weight: bold;">Google Haritalar'da Aç</a></td></tr>`;
-                }
-
-                html += '</tbody></table>';
-                sonucDiv.innerHTML = html;
-                
-                if (koordinatMetni !== 'Koordinat Yok/Hatalı') {
-                    if (harita) harita.remove();
-                    harita = L.map('haritaAlani').setView([lat, lon], 13);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
-                    L.marker([lat, lon]).addTo(harita).bindPopup(`<b>${m['Müşteri Adı']}</b>`).openPopup();
-                }
-            } else if (eslesenMusteriler.length > 1) {
-                let html = `<p class="hata">Birden fazla sonuç bulundu:</p><ul>`;
-                eslesenMusteriler.forEach(m => {
-                     html += `<li><a href="#" onclick="document.getElementById('musteriKodu').value='${m['Müşteri Kodu']}'; sorgula(); return false;">${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</a></li>`;
-                });
-                sonucDiv.innerHTML = html + '</ul>';
-            } else {
-                sonucDiv.innerHTML = `<p class="hata">Müşteri bulunamadı.</p>`;
-            }
-        }
-    </script>
 </body>
 </html>
