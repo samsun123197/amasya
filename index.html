@@ -2,43 +2,74 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Müşteri Portal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background-color: #f4f7f6; }
-        .main-container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .search-section { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"] { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; }
-        button.sorgula-btn { padding: 12px 25px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; width: 30%; }
-        /* Bakiye alanını zorla metin olarak gösteren stil */
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 10px; background-color: #f4f7f6; margin: 0; }
+        .main-container { max-width: 900px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        .search-section { display: flex; gap: 8px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.3s; }
+        input[type="text"]:focus { border-color: #28a745; }
+        
+        button.sorgula-btn { padding: 12px 20px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; word-wrap: break-word; }
+        th { background-color: #f8f9fa; width: 35%; color: #666; font-size: 14px; }
+        
         .bakiye-metin { 
-            font-size: 24px !important; 
+            font-size: 22px !important; 
             font-weight: bold !important; 
             font-family: monospace !important;
             margin: 0;
             display: inline-block;
         }
-        .btn-group { display: flex; gap: 5px; }
-        .action-btn { padding: 8px 15px; border-radius: 5px; color: white; text-decoration: none; font-size: 13px; font-weight: bold; border: none; cursor: pointer; }
+
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .action-btn { 
+            flex: 1 1 calc(50% - 8px); /* Mobilde yan yana iki buton */
+            padding: 12px 8px; 
+            border-radius: 8px; 
+            color: white; 
+            text-decoration: none; 
+            font-size: 12px; 
+            font-weight: bold; 
+            border: none; 
+            cursor: pointer; 
+            text-align: center;
+        }
         .excel-btn { background-color: #217346; }
         .pdf-btn { background-color: #d32f2f; }
-        .detay-btn { background-color: #007bff; }
-        #haritaAlani { height: 350px; margin-top: 20px; border-radius: 10px; display: none; border: 1px solid #ddd; }
+        .detay-btn { background-color: #007bff; flex: 1 1 100%; } /* Detay butonu mobilde tam satır */
+        
+        #haritaAlani { height: 300px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; width: 100%; }
+        
+        .sonuc-liste { background:#fff; border:1px solid #ddd; border-radius:8px; padding:5px; margin-top: 10px; }
+        .sonuc-item { padding:15px; border-bottom:1px solid #eee; cursor:pointer; list-style: none; font-size: 14px; }
+        .sonuc-item:last-child { border-bottom: none; }
+
+        /* Mobil Ekran Düzenlemeleri */
+        @media (max-width: 600px) {
+            body { padding: 5px; }
+            .main-container { border-radius: 0; padding: 15px 10px; }
+            th { width: 40%; font-size: 13px; }
+            td { font-size: 14px; }
+            .bakiye-metin { font-size: 20px !important; }
+            button.sorgula-btn { padding: 12px 15px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="main-container">
-    <h2 style="text-align:center;">Müşteri Bilgi Portalı</h2>
+    <h2 style="text-align:center; color: #333; margin-bottom: 20px; font-size: 20px;">Müşteri Bilgi Sistemi</h2>
     <div class="search-section">
-        <input type="text" id="musteriKodu" placeholder="Müşteri No veya İsim..." onkeypress="if(event.keyCode == 13) sorgula()">
-        <button onclick="sorgula()" class="sorgula-btn">Sorgula</button>
+        <input type="text" id="musteriKodu" placeholder="Kod veya İsim..." onkeypress="if(event.keyCode == 13) sorgula()">
+        <button onclick="sorgula()" class="sorgula-btn">ARA</button>
     </div>
     <div id="sonucAlani"></div>
     <div id="haritaAlani"></div>
@@ -56,16 +87,20 @@
 
     function sorgula() {
         const arama = document.getElementById('musteriKodu').value.trim().toUpperCase();
+        if(!arama) return;
         const bulunanlar = tumMusteriler.filter(m => String(m['Müşteri Kodu']).includes(arama) || String(m['Müşteri Adı']).toUpperCase().includes(arama));
 
         if (bulunanlar.length === 1) {
             detayGoster(bulunanlar[0]);
         } else if (bulunanlar.length > 1) {
-            let html = '<div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:10px;"><strong>Sonuçlar:</strong><ul style="list-style:none; padding:0; margin:10px 0 0 0;">';
-            bulunanlar.forEach(m => {
-                html += `<li style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="hizliSec('${m['Müşteri Kodu']}')">🔹 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
+            let html = '<div class="sonuc-liste"><strong>Sonuçlar:</strong><ul style="padding:0; margin:0;">';
+            bulunanlar.slice(0, 15).forEach(m => {
+                html += `<li class="sonuc-item" onclick="hizliSec('${m['Müşteri Kodu']}')">📍 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
             });
             document.getElementById('sonucAlani').innerHTML = html + '</ul></div>';
+            document.getElementById('haritaAlani').style.display = 'none';
+        } else {
+            document.getElementById('sonucAlani').innerHTML = '<p style="color:red; text-align:center; padding:20px;">Müşteri bulunamadı.</p>';
         }
     }
 
@@ -76,9 +111,7 @@
         const bakiyeHam = m['Bakiye'] ? String(m['Bakiye']).trim() : "0,00";
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
-
-        // Renk mantığı (Sadece görsel)
-        const renk = bakiyeHam.startsWith('-') ? 'green' : 'red';
+        const renk = bakiyeHam.startsWith('-') ? '#28a745' : '#d32f2f';
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
@@ -86,13 +119,14 @@
                     <th>İşlemler</th>
                     <td>
                         <div class="btn-group">
-                            <button onclick="linkAc('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">Excel</button>
-                            <button onclick="linkAc('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">PDF</button>
-                            <button onclick="detayAc('${mKodu}')" class="action-btn detay-btn">Detay</button>
+                            <button onclick="linkAc('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Excel Ekstre</button>
+                            <button onclick="linkAc('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 PDF Ekstre</button>
+                            <button onclick="detayAc('${mKodu}')" class="action-btn detay-btn">🔍 Satış Detay</button>
                         </div>
                     </td>
                 </tr>
-                <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
+                <tr><th>Müşteri No</th><td><b>${mKodu}</b></td></tr>
+                <tr><th>Müşteri Adı</th><td><b>${m['Müşteri Adı']}</b></td></tr>
                 <tr>
                     <th>Bakiye</th>
                     <td>
@@ -104,7 +138,7 @@
         if (!isNaN(lat) && lat !== 0) {
             document.getElementById('haritaAlani').style.display = 'block';
             if (harita) harita.remove();
-            harita = L.map('haritaAlani').setView([lat, lon], 15);
+            harita = L.map('haritaAlani', { dragging: !L.Browser.mobile, tap: !L.Browser.mobile }).setView([lat, lon], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
             L.marker([lat, lon]).addTo(harita).bindPopup(m['Müşteri Adı']).openPopup();
         }
