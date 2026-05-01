@@ -18,10 +18,10 @@
         .excel-btn { background-color: #217346; }
         .pdf-btn { background-color: #d32f2f; }
         .detay-btn { background-color: #007bff; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; table-layout: fixed; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
         th { background-color: #f8f9fa; width: 30%; }
-        .bakiye-deger { font-size: 22px; font-weight: 800; display: inline-block; }
+        .bakiye-deger { font-size: 22px; font-weight: bold; }
         #haritaAlani { height: 400px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; }
     </style>
 </head>
@@ -65,10 +65,11 @@
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
         
-        // Bakiye Temizleme Operasyonu
-        let rawBakiye = String(m['Bakiye']).replace(/[^\d,-]/g, '').trim(); 
-        let isNegative = rawBakiye.includes('-');
-        let color = isNegative ? '#28a745' : '#dc3545'; // Negatifse Yeşil, Pozitifse Kırmızı
+        // Ham veriyi olduğu gibi alıyoruz (En güvenli yöntem)
+        let bakiyeYazisi = m['Bakiye'] ? String(m['Bakiye']) : "0,00";
+        
+        // Sadece renk için kontrol (Eksi içeriyorsa yeşil, içermiyorsa kırmızı)
+        let bakiyeRengi = bakiyeYazisi.includes('-') ? '#28a745' : '#dc3545';
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
@@ -82,8 +83,8 @@
                         </div>
                     </td>
                 </tr>
-                <tr><th>Müşteri</th><td><b>${mKodu}<br>${m['Müşteri Adı']}</b></td></tr>
-                <tr><th>Bakiye</th><td><span class="bakiye-deger" style="color:${color}">${rawBakiye} TL</span></td></tr>
+                <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
+                <tr><th>Bakiye</th><td><span class="bakiye-deger" style="color:${bakiyeRengi}">${bakiyeYazisi} TL</span></td></tr>
             </table>`;
         
         if (!isNaN(lat) && lat !== 0) {
