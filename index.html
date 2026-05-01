@@ -10,7 +10,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
-        /* Genel Mobil Ayarları */
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; padding: 10px; background-color: #f4f7f6; margin: 0; }
         
@@ -25,19 +24,16 @@
         
         h2 { color: #007bff; text-align: center; font-size: 1.4rem; margin-top: 10px; }
         
-        /* Arama Alanı Mobil Uyumu */
         .search-area { display: flex; flex-direction: row; gap: 8px; margin-bottom: 20px; }
         input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
         button.sorgula-btn { padding: 12px 18px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; }
 
-        /* Tablo Mobil Görünümü */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; border: 1px solid #007bff; background: #fff; }
         th, td { padding: 12px 10px; border: 1px solid #dee2e6; text-align: left; font-size: 14px; }
         th { background-color: #f8f9fa; width: 40%; color: #333; font-weight: 600; }
         
         .bakiye-val { font-size: 18px; font-weight: bold; font-family: 'Courier New', monospace; }
         
-        /* Butonlar ve Linkler */
         .copy-btn { background-color: #007bff; color: white; border: none; padding: 8px 10px; cursor: pointer; border-radius: 6px; font-size: 12px; margin-top: 5px; display: inline-block; }
         .map-link { color: #007bff; font-weight: bold; text-decoration: none; display: inline-block; padding: 5px 0; }
         .dolap-detay { margin-left: 5px; font-weight: bold; color: #dc3545; text-decoration: none; font-size: 15px; }
@@ -54,19 +50,18 @@
             text-decoration: none; 
             text-align: center; 
             flex: 1; 
-            min-width: 120px; /* Mobilde yan yana sığmazsa alta geçer */
+            min-width: 120px;
         }
         .excel-bg { background-color: #217346; }
         .pdf-bg { background-color: #d32f2f; }
         .detay-bg { background-color: #007bff; width: 100%; display: block; margin-bottom: 5px; }
+        .key-bg { background-color: #f39c12; color: white; } /* Turuncu renk şifre butonu için */
 
-        /* Harita Mobil Yüksekliği */
         #haritaAlani { height: 300px; margin-top: 20px; border: 1px solid #007bff; border-radius: 8px; display: none; }
         
         .liste-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; color: #007bff; font-weight: 500; }
         .liste-item:active { background-color: #e8f0fe; }
 
-        /* Ekran Genişliği Azaldıkça Font Ayarı */
         @media (max-width: 480px) {
             th, td { font-size: 13px; padding: 10px 8px; }
             .bakiye-val { font-size: 16px; }
@@ -149,6 +144,15 @@
                     <td>
                         <b>${dolapSayisi} Adet</b> 
                         <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" class="dolap-detay">[Detay Gör]</a>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>Key-Şifre İşlemi</th>
+                    <td>
+                        <button class="action-btn key-bg" onclick="window.open('https://samsun123197.github.io/harf-donusturucu/', '_blank')">
+                            🔑 Şifre Al
+                        </button>
                     </td>
                 </tr>
 
