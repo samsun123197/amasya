@@ -11,17 +11,17 @@
         body { font-family: 'Segoe UI', sans-serif; padding: 20px; background-color: #f4f7f6; }
         .main-container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .search-section { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
-        input[type="text"] { padding: 12px; width: 60%; border-radius: 8px; border: 1px solid #ddd; }
+        input[type="text"] { padding: 12px; width: 60%; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; }
         button.sorgula-btn { padding: 12px 25px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        .action-btn { border: none; padding: 10px 15px; cursor: pointer; border-radius: 6px; font-weight: bold; color: white; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; }
+        .action-btn { border: none; padding: 10px 15px; cursor: pointer; border-radius: 6px; font-weight: bold; color: white; text-decoration: none; font-size: 13px; }
         .excel-btn { background-color: #217346; }
         .pdf-btn { background-color: #d32f2f; }
         .detay-btn { background-color: #007bff; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; table-layout: fixed; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; overflow: hidden; }
         th { background-color: #f8f9fa; width: 30%; }
-        td.bakiye-cell { font-size: 20px; font-weight: bold; }
+        .bakiye-deger { font-size: 22px; font-weight: 800; display: inline-block; }
         #haritaAlani { height: 400px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; }
     </style>
 </head>
@@ -43,20 +43,18 @@
     let harita = null;
 
     Papa.parse(veriDosyasiURL, {
-        download: true, header: true,
+        download: true, header: true, skipEmptyLines: true,
         complete: function(results) { tumMusteriler = results.data; }
     });
 
     function sorgula() {
-        const input = document.getElementById('musteriKodu').value.trim().toUpperCase();
-        const sonuclar = tumMusteriler.filter(m => String(m['Müşteri Kodu']).includes(input) || String(m['Müşteri Adı']).toUpperCase().includes(input));
-        if (sonuclar.length === 1) { detayGoster(sonuclar[0]); }
-        else if (sonuclar.length > 1) {
-            let listHtml = `<ul style="list-style:none; padding:0;">`;
-            sonuclar.forEach(m => {
-                listHtml += `<li style="padding:10px; border:1px solid #eee; margin-bottom:5px; cursor:pointer; border-radius:8px;" onclick="hizliSec('${m['Müşteri Kodu']}')">📌 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
-            });
-            document.getElementById('sonucAlani').innerHTML = listHtml + '</ul>';
+        const val = document.getElementById('musteriKodu').value.trim().toUpperCase();
+        const res = tumMusteriler.filter(m => String(m['Müşteri Kodu']).includes(val) || String(m['Müşteri Adı']).toUpperCase().includes(val));
+        if (res.length === 1) { detayGoster(res[0]); }
+        else if (res.length > 1) {
+            let html = '<ul style="list-style:none; padding:0;">';
+            res.forEach(m => { html += `<li style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="hizliSec('${m['Müşteri Kodu']}')">📌 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`; });
+            document.getElementById('sonucAlani').innerHTML = html + '</ul>';
         }
     }
 
@@ -67,11 +65,10 @@
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
         
-        // Bakiye İşleme: Sayıya çevirmeden doğrudan hücredeki metni kullanıyoruz
-        let hamBakiye = String(m['Bakiye']).trim();
-        
-        // Eğer değer "-" ile başlıyorsa YEŞİL, başlamıyorsa (veya 0'dan büyükse) KIRMIZI
-        let bakiyeRengi = hamBakiye.startsWith('-') ? 'green' : 'red';
+        // Bakiye Temizleme Operasyonu
+        let rawBakiye = String(m['Bakiye']).replace(/[^\d,-]/g, '').trim(); 
+        let isNegative = rawBakiye.includes('-');
+        let color = isNegative ? '#28a745' : '#dc3545'; // Negatifse Yeşil, Pozitifse Kırmızı
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
@@ -79,14 +76,14 @@
                     <th>Raporlar</th>
                     <td>
                         <div class="btn-group">
-                            <button onclick="ekstreIndir('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Ekstre Excel</button>
-                            <button onclick="ekstreIndir('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 Ekstre PDF</button>
+                            <button onclick="ekstreIndir('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Excel</button>
+                            <button onclick="ekstreIndir('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 PDF</button>
                             <button onclick="ozelDetayGor('${mKodu}')" class="action-btn detay-btn">🔍 Detay Gör</button>
                         </div>
                     </td>
                 </tr>
-                <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
-                <tr><th>Bakiye</th><td class="bakiye-cell" style="color:${bakiyeRengi}">${hamBakiye} TL</td></tr>
+                <tr><th>Müşteri</th><td><b>${mKodu}<br>${m['Müşteri Adı']}</b></td></tr>
+                <tr><th>Bakiye</th><td><span class="bakiye-deger" style="color:${color}">${rawBakiye} TL</span></td></tr>
             </table>`;
         
         if (!isNaN(lat) && lat !== 0) {
