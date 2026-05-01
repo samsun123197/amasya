@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Müşteri Bilgi Sorgulama - Amasya</title>
     
+    <!-- Kütüphaneler -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -55,6 +56,7 @@
         }
         button.sorgula-btn:hover { background-color: #218838; }
 
+        /* Buton Grupları */
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .action-btn {
             border: none;
@@ -71,9 +73,10 @@
         }
         .excel-btn { background-color: #217346; }
         .pdf-btn { background-color: #d32f2f; }
-        .satis-detay-btn { background-color: #ff9800; } /* Farklılaşması için turuncu yaptım */
+        .satis-btn { background-color: #00897b; } /* Satış detayı için farklı bir renk */
         .copy-btn { background-color: #007bff; font-size: 11px; padding: 5px 8px; }
 
+        /* Tablo Tasarımı */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -113,11 +116,11 @@
     <h1>Müşteri Portal - Amasya</h1>
     
     <div class="search-section">
-        <input type="text" id="musteriKodu" placeholder="Müşteri Kodu veya Adı Giriniz..." onkeypress="if(event.keyCode == 13) sorgula()">
+        <input type="text" id="musteriKodu" placeholder="Müşteri Kodu veya Adı..." onkeypress="if(event.keyCode == 13) sorgula()">
         <button onclick="sorgula()" class="sorgula-btn">SORGULA</button>
     </div>
 
-    <p id="yukleniyor" class="loading">Veriler yükleniyor...</p>
+    <p id="yukleniyor" class="loading">Veriler yükleniyor, lütfen bekleyiniz...</p>
 
     <div id="sonucAlani"></div>
     <div id="haritaAlani" style="display:none;"></div>
@@ -128,6 +131,7 @@
     let tumMusteriler = [];
     let harita = null; 
 
+    // Veri Yükleme
     Papa.parse(veriDosyasiURL, {
         download: true,
         header: true,
@@ -181,7 +185,7 @@
                 <div class="btn-group">
                     <button onclick="ekstreIndir('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Ekstre (Excel)</button>
                     <button onclick="ekstreIndir('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 Ekstre (PDF)</button>
-                    <button onclick="satisDetayPDF('${mKodu}')" class="action-btn satis-detay-btn">📈 Satış Detay (PDF)</button>
+                    <button onclick="satisDetayIndir('${mKodu}', 'ExportToPDF')" class="action-btn satis-btn">📈 Satış Detay (PDF)</button>
                 </div>
             </td></tr>
             <tr><th>Müşteri Bilgisi</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
@@ -203,6 +207,7 @@
         sonucDiv.innerHTML = html;
     }
 
+    // Harita Kurulumu
     function setupMap(lat, lon, isim) {
         if (harita) harita.remove();
         harita = L.map('haritaAlani').setView([lat, lon], 15);
@@ -210,14 +215,17 @@
         L.marker([lat, lon]).addTo(harita).bindPopup(isim).openPopup();
     }
 
+    // --- RAPOR FONKSİYONLARI ---
+
+    // Cari Ekstre İndirme Fonksiyonu
     function ekstreIndir(kod, mod) {
         const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`;
         window.open(url, '_blank');
     }
 
-    function satisDetayPDF(kod) {
-        // Yeni PDF link formatı
-        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE('20260101','YYYYMMDD')|1;TO_DATE('20261231','YYYYMMDD')|2;134010607746|13;|14;|15;|6;|10;'${kod}'|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
+    // Satış Detay İndirme Fonksiyonu (Senin istediğin yapı)
+    function satisDetayIndir(kod, mod) {
+        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE('20260101','YYYYMMDD')|1;TO_DATE('20261231','YYYYMMDD')|2;134010607746|13;|14;|15;|6;|10;'${kod}'|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=${mod}&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
         window.open(url, '_blank');
     }
 
