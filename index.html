@@ -21,7 +21,7 @@
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
         th { background-color: #f8f9fa; width: 30%; }
-        td.bakiye-cell { font-size: 18px; white-space: nowrap; } /* Sığmama sorununu önler */
+        td.bakiye-cell { font-size: 18px; white-space: nowrap; }
         #haritaAlani { height: 400px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; }
     </style>
 </head>
@@ -69,15 +69,18 @@
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
         
-        // --- Gelişmiş Bakiye İşleme ---
-        let hamVeri = String(m['Bakiye']).replace(/\s/g, ''); // Tüm boşlukları temizle
-        let sayisalBakiye = parseFloat(hamVeri.replace('.', '').replace(',', '.'));
+        // --- Eksi Değer Uyumlu Bakiye İşleme ---
+        let hamVeri = String(m['Bakiye']).replace(/\s/g, ''); // Boşlukları sil
+        
+        // Önce binlik ayracı olan noktayı kaldırıyoruz, sonra virgulü noktaya çeviriyoruz
+        let temizSayı = hamVeri.replace(/\./g, '').replace(',', '.');
+        let sayisalBakiye = parseFloat(temizSayı);
         
         let formatliBakiye;
         if (!isNaN(sayisalBakiye)) {
             formatliBakiye = sayisalBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
         } else {
-            formatliBakiye = m['Bakiye']; // Eğer sayı değilse Excel'deki halini göster
+            formatliBakiye = m['Bakiye'] + " TL"; 
         }
 
         document.getElementById('sonucAlani').innerHTML = `
