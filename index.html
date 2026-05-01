@@ -11,21 +11,20 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background-color: #f4f7f6; }
         .main-container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .search-section { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"] { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; }
+        input[type="text"] { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
         button.sorgula-btn { padding: 12px 25px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; width: 30%; }
-        /* Bakiye alanını zorla metin olarak gösteren stil */
-        .bakiye-metin { 
-            font-size: 24px !important; 
-            font-weight: bold !important; 
-            font-family: monospace !important;
-            margin: 0;
-            display: inline-block;
+        th { background-color: #f8f9fa; width: 30%; color: #666; }
+        .bakiye-alan { 
+            font-size: 26px !important; 
+            font-weight: 800 !important; 
+            letter-spacing: 0.5px;
+            display: block;
+            margin: 5px 0;
         }
-        .btn-group { display: flex; gap: 5px; }
-        .action-btn { padding: 8px 15px; border-radius: 5px; color: white; text-decoration: none; font-size: 13px; font-weight: bold; border: none; cursor: pointer; }
+        .btn-group { display: flex; gap: 8px; }
+        .action-btn { padding: 10px 15px; border-radius: 6px; color: white; text-decoration: none; font-size: 13px; font-weight: bold; border: none; cursor: pointer; }
         .excel-btn { background-color: #217346; }
         .pdf-btn { background-color: #d32f2f; }
         .detay-btn { background-color: #007bff; }
@@ -35,7 +34,7 @@
 <body>
 
 <div class="main-container">
-    <h2 style="text-align:center;">Müşteri Bilgi Portalı</h2>
+    <h2 style="text-align:center; color:#333;">Müşteri Bilgi Paneli</h2>
     <div class="search-section">
         <input type="text" id="musteriKodu" placeholder="Müşteri No veya İsim..." onkeypress="if(event.keyCode == 13) sorgula()">
         <button onclick="sorgula()" class="sorgula-btn">Sorgula</button>
@@ -56,16 +55,18 @@
 
     function sorgula() {
         const arama = document.getElementById('musteriKodu').value.trim().toUpperCase();
+        if(!arama) return;
         const bulunanlar = tumMusteriler.filter(m => String(m['Müşteri Kodu']).includes(arama) || String(m['Müşteri Adı']).toUpperCase().includes(arama));
 
         if (bulunanlar.length === 1) {
             detayGoster(bulunanlar[0]);
         } else if (bulunanlar.length > 1) {
-            let html = '<div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:10px;"><strong>Sonuçlar:</strong><ul style="list-style:none; padding:0; margin:10px 0 0 0;">';
+            let html = '<div style="margin-top:15px; border:1px solid #ddd; border-radius:8px; overflow:hidden;">';
             bulunanlar.forEach(m => {
-                html += `<li style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="hizliSec('${m['Müşteri Kodu']}')">🔹 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
+                html += `<div style="padding:12px; background:#fff; border-bottom:1px solid #eee; cursor:pointer;" onclick="hizliSec('${m['Müşteri Kodu']}')">➡️ ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</div>`;
             });
-            document.getElementById('sonucAlani').innerHTML = html + '</ul></div>';
+            document.getElementById('sonucAlani').innerHTML = html + '</div>';
+            document.getElementById('haritaAlani').style.display = 'none';
         }
     }
 
@@ -73,30 +74,35 @@
 
     function detayGoster(m) {
         const mKodu = m['Müşteri Kodu'];
-        const bakiyeHam = m['Bakiye'] ? String(m['Bakiye']).trim() : "0,00";
+        
+        // KRİTİK NOKTA: Veriyi hiçbir matematiksel işleme sokmadan doğrudan STRING olarak alıyoruz.
+        // Eğer hücre boşsa "0,00" yazdırıyoruz.
+        let rawBakiye = m['Bakiye'] ? String(m['Bakiye']) : "0,00";
+        
+        // Eksi işareti varsa yeşil (Alacaklı), yoksa kırmızı (Borçlu)
+        let renk = rawBakiye.indexOf('-') > -1 ? '#28a745' : '#d32f2f';
+
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
-
-        // Renk mantığı (Sadece görsel)
-        const renk = bakiyeHam.startsWith('-') ? 'green' : 'red';
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
                 <tr>
-                    <th>İşlemler</th>
+                    <th>Raporlar</th>
                     <td>
                         <div class="btn-group">
-                            <button onclick="linkAc('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">Excel</button>
-                            <button onclick="linkAc('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">PDF</button>
-                            <button onclick="detayAc('${mKodu}')" class="action-btn detay-btn">Detay</button>
+                            <button onclick="linkGit('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">Excel</button>
+                            <button onclick="linkGit('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">PDF</button>
+                            <button onclick="detayGit('${mKodu}')" class="action-btn detay-btn">Detay</button>
                         </div>
                     </td>
                 </tr>
-                <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
+                <tr><th>Müşteri No</th><td><b>${mKodu}</b></td></tr>
+                <tr><th>Ünvan</th><td><b>${m['Müşteri Adı']}</b></td></tr>
                 <tr>
                     <th>Bakiye</th>
                     <td>
-                        <pre class="bakiye-metin" style="color:${renk}">${bakiyeHam} TL</pre>
+                        <span class="bakiye-alan" style="color:${renk}">${rawBakiye} TL</span>
                     </td>
                 </tr>
             </table>`;
@@ -110,14 +116,12 @@
         }
     }
 
-    function linkAc(kod, mod) {
-        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`;
-        window.open(url, '_blank');
+    function linkGit(kod, mod) {
+        window.open(`https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`, '_blank');
     }
 
-    function detayAc(kod) {
-        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`20260101\`,\`YYYYMMDD\`)|1;TO_DATE(\`20261231\`,\`YYYYMMDD\`)|2;134000428026|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
-        window.open(url, '_blank');
+    function detayGit(kod) {
+        window.open(`https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`20260101\`,\`YYYYMMDD\`)|1;TO_DATE(\`20261231\`,\`YYYYMMDD\`)|2;134000428026|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`, '_blank');
     }
 </script>
 </body>
