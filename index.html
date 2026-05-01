@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Müşteri Bilgi Sorgulama - Amasya</title>
+    <title>Müşteri Portal - Amasya</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -30,6 +30,7 @@
         .error { color: red; font-weight: bold; text-align: center; }
         .musteri-listesi { list-style: none; padding: 0; }
         .musteri-listesi li { padding: 12px; background: #fff; border: 1px solid #eee; margin-bottom: 5px; border-radius: 8px; cursor: pointer; }
+        .musteri-listesi li:hover { background: #eef6ff; }
     </style>
 </head>
 <body>
@@ -113,14 +114,23 @@
         L.marker([lat, lon]).addTo(harita).bindPopup(isim).openPopup();
     }
 
+    // --- RAPOR FONKSİYONLARI ---
+
     function ekstreIndir(kod, mod) {
         const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`;
         window.open(url, '_blank');
     }
 
     function satisDetayIndir(kod, mod) {
-        // Tırnak işaretleri ORA-00904 hatasını çözmek için düzeltildi
-        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE('20260101','YYYYMMDD')|1;TO_DATE('20261231','YYYYMMDD')|2;134010607746|13;|14;|15;|6;|10;'${kod}'|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=${mod}&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
+        // SQL Hatalarını önlemek için değerleri encode ediyoruz
+        const t1 = "TO_DATE('20260101','YYYYMMDD')";
+        const t2 = "TO_DATE('20261231','YYYYMMDD')";
+        const mK = `'${kod}'`;
+
+        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883` +
+                    `&Values=0;${encodeURIComponent(t1)}|1;${encodeURIComponent(t2)}|2;134010607746|13;|14;|15;|6;|10;${encodeURIComponent(mK)}|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;` +
+                    `&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=${mod}&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
+        
         window.open(url, '_blank');
     }
 
