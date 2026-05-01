@@ -30,10 +30,10 @@
         .dolap-detay { margin-left: 10px; font-weight: bold; color: #dc3545; text-decoration: none; }
 
         .btn-group { display: flex; gap: 8px; }
-        .action-btn { padding: 8px 12px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; text-decoration: none; text-align: center; }
+        .action-btn { padding: 8px 12px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; text-decoration: none; text-align: center; flex: 1; }
         .excel-bg { background-color: #217346; }
         .pdf-bg { background-color: #d32f2f; }
-        .detay-bg { background-color: #007bff; display: block; width: 100%; margin-top: 5px; }
+        .detay-bg { background-color: #007bff; display: block; width: 100%; }
 
         #haritaAlani { height: 400px; margin-top: 25px; border: 2px solid #007bff; border-radius: 8px; display: none; }
         
@@ -120,17 +120,9 @@
                 </tr>
 
                 <tr>
-                    <th>Kopyalanacak Koordinat</th>
+                    <th>Satış Analizi</th>
                     <td>
-                        <span>${coordText}</span>
-                        ${coordText !== 'Koordinat Tanımsız' ? `<button class="copy-btn" id="btnCopy" onclick="copyToClipboard('${coordText}')">Panoya Kopyala</button>` : ''}
-                    </td>
-                </tr>
-                
-                <tr>
-                    <th>Haritada Göster</th>
-                    <td>
-                        ${coordText !== 'Koordinat Tanımsız' ? `<a href="https://www.google.com/maps?q=${rawLat},${rawLon}" target="_blank" class="map-link">Google Haritalar'da Aç</a>` : '-'}
+                        <button class="action-btn detay-bg" onclick="openDetail('${mKodu}')">Satış Detaylarını Görüntüle</button>
                     </td>
                 </tr>
 
@@ -143,10 +135,19 @@
                         </div>
                     </td>
                 </tr>
+
                 <tr>
-                    <th>Satış Analizi</th>
+                    <th>Kopyalanacak Koordinat</th>
                     <td>
-                        <button class="action-btn detay-bg" onclick="openDetail('${mKodu}')">Satış Detaylarını Görüntüle</button>
+                        <span>${coordText}</span>
+                        ${coordText !== 'Koordinat Tanımsız' ? `<button class="copy-btn" id="btnCopy" onclick="copyToClipboard('${coordText}')">Panoya Kopyala</button>` : ''}
+                    </td>
+                </tr>
+                
+                <tr>
+                    <th>Haritada Göster</th>
+                    <td>
+                        ${coordText !== 'Koordinat Tanımsız' ? `<a href="https://www.google.com/maps?q=${rawLat},${rawLon}" target="_blank" class="map-link">Google Haritalar'da Aç</a>` : '-'}
                     </td>
                 </tr>
             </table>
