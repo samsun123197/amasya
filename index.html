@@ -22,7 +22,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
         }
 
-        /* Üst Buton Grupları */
         .top-nav { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
         
         .nav-btn { 
@@ -39,8 +38,8 @@
             cursor: pointer;
         }
         
-        .key-btn { background-color: #f39c12; } /* Şifre butonu turuncu */
-        .dolap-btn { background-color: #d32f2f; } /* Dolap butonu kırmızı */
+        .key-btn { background-color: #f39c12; }
+        .dolap-btn { background-color: #d32f2f; }
         
         h2 { color: #007bff; text-align: center; font-size: 1.3rem; margin-top: 5px; margin-bottom: 15px; }
         
@@ -70,11 +69,12 @@
             text-decoration: none; 
             text-align: center; 
             flex: 1; 
-            min-width: 120px;
+            min-width: 100px;
         }
         .excel-bg { background-color: #217346; }
         .pdf-bg { background-color: #d32f2f; }
-        .detay-bg { background-color: #007bff; width: 100%; display: block; margin-bottom: 5px; }
+        .detay-bg { background-color: #007bff; }
+        .detay-bg-alt { background-color: #6c757d; }
 
         #haritaAlani { height: 300px; margin-top: 20px; border: 1px solid #007bff; border-radius: 8px; display: none; }
         
@@ -91,7 +91,6 @@
 <body>
 
 <div class="main-container">
-    <!-- En Tepe Hızlı Menü -->
     <div class="top-nav">
         <button class="nav-btn key-btn" onclick="window.open('https://samsun123197.github.io/harf-donusturucu/', '_blank')">
             🔑 Key-Şifre İşlemi için tıklayın
@@ -154,9 +153,6 @@
         const mKodu = m['Müşteri Kodu'];
         const bakiye = m['Bakiye'] || "0,00";
         const bakiyeRenk = bakiye.includes('-') ? '#28a745' : '#d32f2f';
-        const dolapSayisi = m['Dolap Sayısı'] || "0";
-        const kanal = m['Kanal'] || "-";
-        const adres = m['Adres'] || "-";
         const rawLat = String(m['Enlem'] || '0').replace(',', '.').trim();
         const rawLon = String(m['Boylam'] || '0').replace(',', '.').trim();
         const coordText = (rawLat !== '0' && rawLat !== '') ? `${rawLat},${rawLon}` : 'Koordinat Tanımsız';
@@ -164,14 +160,14 @@
         let html = `
             <table>
                 <tr><th>Müşteri</th><td><strong>${mKodu}</strong><br>${m['Müşteri Adı']}</td></tr>
-                <tr><th>Kanal</th><td>${kanal}</td></tr>
-                <tr><th>Adres</th><td>${adres}</td></tr>
+                <tr><th>Kanal</th><td>${m['Kanal'] || "-"}</td></tr>
+                <tr><th>Adres</th><td>${m['Adres'] || "-"}</td></tr>
                 <tr><th>Bakiye</th><td class="bakiye-val" style="color:${bakiyeRenk}">${bakiye} TL</td></tr>
                 
                 <tr>
                     <th>Dolap Bilgisi</th>
                     <td>
-                        <b>${dolapSayisi} Adet</b> 
+                        <b>${m['Dolap Sayısı'] || "0"} Adet</b> 
                         <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" class="detail-link">[Detay Gör]</a>
                     </td>
                 </tr>
@@ -179,7 +175,10 @@
                 <tr>
                     <th>Satış Analizi</th>
                     <td>
-                        <button class="action-btn detay-bg" onclick="openDetail('${mKodu}')">Analiz Raporu Aç</button>
+                        <div class="btn-group">
+                            <button class="action-btn detay-bg-alt" onclick="openDetail('${mKodu}', '2025')">2025 Analiz</button>
+                            <button class="action-btn detay-bg" onclick="openDetail('${mKodu}', '2026')">2026 Analiz</button>
+                        </div>
                     </td>
                 </tr>
 
@@ -212,8 +211,7 @@
             const hDiv = document.getElementById('haritaAlani');
             hDiv.style.display = 'block';
             if(leafletMap) leafletMap.remove();
-            
-            leafletMap = L.map('haritaAlani', { dragging: !L.Browser.mobile, tap: !L.Browser.mobile }).setView([parseFloat(rawLat), parseFloat(rawLon)], 15);
+            leafletMap = L.map('haritaAlani').setView([parseFloat(rawLat), parseFloat(rawLon)], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
             L.marker([parseFloat(rawLat), parseFloat(rawLon)]).addTo(leafletMap).bindPopup(m['Müşteri Adı']).openPopup();
         } else {
@@ -233,8 +231,10 @@
         window.open(`https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mode}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`, '_blank');
     }
 
-    function openDetail(kod) {
-        window.open(`https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`20260101\`,\`YYYYMMDD\`)|1;TO_DATE(\`20261231\`,\`YYYYMMDD\`)|2;134000428026|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`, '_blank');
+    function openDetail(kod, yil) {
+        const start = yil + "0101";
+        const end = yil + "1231";
+        window.open(`https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`${start}\`,\`YYYYMMDD\`)|1;TO_DATE(\`${end}\`,\`YYYYMMDD\`)|2;134000428026|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`, '_blank');
     }
 </script>
 </body>
