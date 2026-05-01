@@ -73,6 +73,10 @@
         const mKodu = m['Müşteri Kodu'];
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
+        
+        // Bakiye formatlama (Nokta ve virgül ayrımı için)
+        const hamBakiye = parseFloat(String(m['Bakiye']).replace('.', '').replace(',', '.'));
+        const formatliBakiye = isNaN(hamBakiye) ? m['Bakiye'] : hamBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
@@ -87,7 +91,7 @@
                     </td>
                 </tr>
                 <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
-                <tr><th>Bakiye</th><td><b style="color:${parseFloat(m['Bakiye']) > 0 ? 'red' : 'green'}">${m['Bakiye']} TL</b></td></tr>
+                <tr><th>Bakiye</th><td><b style="color:${hamBakiye > 0 ? 'red' : 'green'}">${formatliBakiye} TL</b></td></tr>
             </table>`;
         
         if (!isNaN(lat) && lat !== 0) {
@@ -107,7 +111,6 @@
     }
 
     function ozelDetayGor(kod) {
-        // Belirttiğin parametre (134000428026) ve dinamik müşteri kodu ile hazırlanan link
         const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`20260101\`,\`YYYYMMDD\`)|1;TO_DATE(\`20261231\`,\`YYYYMMDD\`)|2;134000428026|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
         window.open(url, '_blank');
     }
