@@ -27,6 +27,7 @@
         
         .copy-btn { background-color: #007bff; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-size: 13px; margin-left: 10px; }
         .map-link { color: #007bff; font-weight: bold; text-decoration: none; }
+        .dolap-detay { margin-left: 10px; font-weight: bold; color: #dc3545; text-decoration: none; }
 
         .btn-group { display: flex; gap: 8px; }
         .action-btn { padding: 8px 12px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 13px; text-decoration: none; text-align: center; }
@@ -93,17 +94,27 @@
     }
 
     function renderMusteri(m) {
+        const mKodu = m['Müşteri Kodu'];
         const bakiye = m['Bakiye'] || "0,00";
         const bakiyeRenk = bakiye.includes('-') ? '#28a745' : '#d32f2f';
+        const dolapSayisi = m['Dolap Sayısı'] || "0";
         const rawLat = String(m['Enlem'] || '0').replace(',', '.').trim();
         const rawLon = String(m['Boylam'] || '0').replace(',', '.').trim();
         const coordText = (rawLat !== '0') ? `${rawLat},${rawLon}` : 'Koordinat Tanımsız';
 
         let html = `
             <table>
-                <tr><th>Müşteri</th><td><strong>${m['Müşteri Kodu']}</strong><br>${m['Müşteri Adı']}</td></tr>
+                <tr><th>Müşteri</th><td><strong>${mKodu}</strong><br>${m['Müşteri Adı']}</td></tr>
                 <tr><th>Bakiye</th><td class="bakiye-val" style="color:${bakiyeRenk}">${bakiye} TL</td></tr>
                 
+                <tr>
+                    <th>Dolap Sayısı</th>
+                    <td>
+                        ${dolapSayisi} 
+                        <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" class="dolap-detay">[Detay]</a>
+                    </td>
+                </tr>
+
                 <tr>
                     <th>Kopyalanacak Koordinat</th>
                     <td>
@@ -123,15 +134,15 @@
                     <th>Cari İşlemler</th>
                     <td>
                         <div class="btn-group">
-                            <button class="action-btn excel-bg" onclick="openReport('${m['Müşteri Kodu']}', 'ExportToExcel')">Excel Ekstre</button>
-                            <button class="action-btn pdf-bg" onclick="openReport('${m['Müşteri Kodu']}', 'ExportToPDF')">PDF Ekstre</button>
+                            <button class="action-btn excel-bg" onclick="openReport('${mKodu}', 'ExportToExcel')">Excel Ekstre</button>
+                            <button class="action-btn pdf-bg" onclick="openReport('${mKodu}', 'ExportToPDF')">PDF Ekstre</button>
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <th>Satış Analizi</th>
                     <td>
-                        <button class="action-btn detay-bg" onclick="openDetail('${m['Müşteri Kodu']}')">Satış Detaylarını Görüntüle</button>
+                        <button class="action-btn detay-bg" onclick="openDetail('${mKodu}')">Satış Detaylarını Görüntüle</button>
                     </td>
                 </tr>
             </table>
@@ -139,18 +150,14 @@
 
         document.getElementById('sonucAlani').innerHTML = html;
 
-        // Sayfanın en altındaki haritayı güncelle
         if(rawLat !== '0') {
             const hDiv = document.getElementById('haritaAlani');
             hDiv.style.display = 'block';
             if(leafletMap) leafletMap.remove();
             
-            const nLat = parseFloat(rawLat);
-            const nLon = parseFloat(rawLon);
-            
-            leafletMap = L.map('haritaAlani').setView([nLat, nLon], 15);
+            leafletMap = L.map('haritaAlani').setView([parseFloat(rawLat), parseFloat(rawLon)], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(leafletMap);
-            L.marker([nLat, nLon]).addTo(leafletMap).bindPopup(m['Müşteri Adı']).openPopup();
+            L.marker([parseFloat(rawLat), parseFloat(rawLon)]).addTo(leafletMap).bindPopup(m['Müşteri Adı']).openPopup();
         }
     }
 
