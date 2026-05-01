@@ -22,12 +22,13 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
         }
 
-        /* En Tepe Şifre Butonu */
-        .key-action-top { 
+        /* Üst Buton Grupları */
+        .top-nav { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        
+        .nav-btn { 
             display: block; 
             width: 100%; 
             padding: 14px; 
-            background-color: #f39c12; 
             color: white; 
             text-align: center; 
             text-decoration: none; 
@@ -36,8 +37,10 @@
             font-size: 15px; 
             border: none;
             cursor: pointer;
-            margin-bottom: 10px;
         }
+        
+        .key-btn { background-color: #f39c12; } /* Şifre butonu turuncu */
+        .dolap-btn { background-color: #d32f2f; } /* Dolap butonu kırmızı */
         
         h2 { color: #007bff; text-align: center; font-size: 1.3rem; margin-top: 5px; margin-bottom: 15px; }
         
@@ -53,7 +56,7 @@
         
         .copy-btn { background-color: #007bff; color: white; border: none; padding: 8px 10px; cursor: pointer; border-radius: 6px; font-size: 12px; margin-top: 5px; display: inline-block; }
         .map-link { color: #007bff; font-weight: bold; text-decoration: none; display: inline-block; padding: 5px 0; }
-        .dolap-detay { margin-left: 5px; font-weight: bold; color: #dc3545; text-decoration: none; font-size: 15px; }
+        .detail-link { margin-left: 5px; font-weight: bold; color: #dc3545; text-decoration: none; font-size: 15px; }
 
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
         .action-btn { 
@@ -88,10 +91,15 @@
 <body>
 
 <div class="main-container">
-    <!-- Sayfanın En Başındaki Buton -->
-    <button class="key-action-top" onclick="window.open('https://samsun123197.github.io/harf-donusturucu/', '_blank')">
-        🔑 Key-Şifre İşlemi için tıklayın
-    </button>
+    <!-- En Tepe Hızlı Menü -->
+    <div class="top-nav">
+        <button class="nav-btn key-btn" onclick="window.open('https://samsun123197.github.io/harf-donusturucu/', '_blank')">
+            🔑 Key-Şifre İşlemi için tıklayın
+        </button>
+        <button class="nav-btn dolap-btn" onclick="window.open('https://samsun123197.github.io/barkod_sorgu/', '_blank')">
+            📋 Dolap Bilgi Ekranı için tıklayın
+        </button>
+    </div>
 
     <h2>Müşteri Bilgi Portalı</h2>
     
@@ -164,7 +172,7 @@
                     <th>Dolap Bilgisi</th>
                     <td>
                         <b>${dolapSayisi} Adet</b> 
-                        <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" class="dolap-detay">[Detay Gör]</a>
+                        <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" class="detail-link">[Detay Gör]</a>
                     </td>
                 </tr>
 
