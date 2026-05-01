@@ -22,8 +22,25 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
         }
         
-        h2 { color: #007bff; text-align: center; font-size: 1.4rem; margin-top: 10px; }
+        h2 { color: #007bff; text-align: center; font-size: 1.4rem; margin-top: 10px; margin-bottom: 15px; }
         
+        /* En Üstteki Şifre Butonu Alanı */
+        .top-action-area { margin-bottom: 20px; }
+        .key-btn-top { 
+            display: block; 
+            width: 100%; 
+            padding: 14px; 
+            background-color: #f39c12; 
+            color: white; 
+            text-align: center; 
+            text-decoration: none; 
+            font-weight: bold; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            border: none;
+            cursor: pointer;
+        }
+
         .search-area { display: flex; flex-direction: row; gap: 8px; margin-bottom: 20px; }
         input[type="text"] { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
         button.sorgula-btn { padding: 12px 18px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; }
@@ -55,7 +72,6 @@
         .excel-bg { background-color: #217346; }
         .pdf-bg { background-color: #d32f2f; }
         .detay-bg { background-color: #007bff; width: 100%; display: block; margin-bottom: 5px; }
-        .key-bg { background-color: #f39c12; color: white; } /* Turuncu renk şifre butonu için */
 
         #haritaAlani { height: 300px; margin-top: 20px; border: 1px solid #007bff; border-radius: 8px; display: none; }
         
@@ -74,6 +90,13 @@
 <div class="main-container">
     <h2>Müşteri Bilgi Portalı</h2>
     
+    <!-- Sayfa Başındaki Şifre Butonu -->
+    <div class="top-action-area">
+        <button class="key-btn-top" onclick="window.open('https://samsun123197.github.io/harf-donusturucu/', '_blank')">
+            🔑 Key-Şifre İşlemleri
+        </button>
+    </div>
+
     <div class="search-area">
         <input type="text" id="searchInput" placeholder="Kod veya isim..." onkeypress="if(event.keyCode == 13) sorgula()">
         <button onclick="sorgula()" class="sorgula-btn">Sorgula</button>
@@ -144,15 +167,6 @@
                     <td>
                         <b>${dolapSayisi} Adet</b> 
                         <a href="https://samsun123197.github.io/barkod_sorgu/?query=${mKodu}" target="_blank" class="dolap-detay">[Detay Gör]</a>
-                    </td>
-                </tr>
-
-                <tr>
-                    <th>Key-Şifre İşlemi</th>
-                    <td>
-                        <button class="action-btn key-bg" onclick="window.open('https://samsun123197.github.io/harf-donusturucu/', '_blank')">
-                            🔑 Şifre Al
-                        </button>
                     </td>
                 </tr>
 
