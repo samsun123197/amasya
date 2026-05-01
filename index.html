@@ -8,31 +8,37 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; background-color: #f0f2f5; }
-        .main-container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .search-section { display: flex; gap: 10px; margin-bottom: 25px; }
-        input[type="text"] { flex-grow: 1; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; }
-        input[type="text"]:focus { border-color: #007bff; }
-        button.sorgula-btn { padding: 15px 30px; background-color: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background-color: #f4f7f6; }
+        .main-container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .search-section { display: flex; gap: 10px; margin-bottom: 20px; }
+        input[type="text"] { flex-grow: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; }
+        button.sorgula-btn { padding: 12px 25px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background-color: #f8f9fa; color: #555; width: 35%; }
-        .bakiye-kutusu { font-size: 24px; font-weight: bold; color: #333; }
-        .btn-group { display: flex; gap: 10px; margin-bottom: 10px; }
-        .action-btn { padding: 10px 20px; border-radius: 8px; color: white; text-decoration: none; font-size: 14px; font-weight: bold; border: none; cursor: pointer; }
+        th { background-color: #f8f9fa; width: 30%; }
+        /* Bakiye alanını zorla metin olarak gösteren stil */
+        .bakiye-metin { 
+            font-size: 24px !important; 
+            font-weight: bold !important; 
+            font-family: monospace !important;
+            margin: 0;
+            display: inline-block;
+        }
+        .btn-group { display: flex; gap: 5px; }
+        .action-btn { padding: 8px 15px; border-radius: 5px; color: white; text-decoration: none; font-size: 13px; font-weight: bold; border: none; cursor: pointer; }
         .excel-btn { background-color: #217346; }
         .pdf-btn { background-color: #d32f2f; }
         .detay-btn { background-color: #007bff; }
-        #haritaAlani { height: 400px; margin-top: 25px; border-radius: 15px; display: none; border: 1px solid #ddd; }
+        #haritaAlani { height: 350px; margin-top: 20px; border-radius: 10px; display: none; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
 <div class="main-container">
-    <h2 style="text-align:center; color:#333; margin-top:0;">Müşteri Bilgi Sistemi</h2>
+    <h2 style="text-align:center;">Müşteri Bilgi Portalı</h2>
     <div class="search-section">
-        <input type="text" id="musteriKodu" placeholder="Müşteri kodunu veya ismini yazın..." onkeypress="if(event.keyCode == 13) sorgula()">
-        <button onclick="sorgula()" class="sorgula-btn">SORGULA</button>
+        <input type="text" id="musteriKodu" placeholder="Müşteri No veya İsim..." onkeypress="if(event.keyCode == 13) sorgula()">
+        <button onclick="sorgula()" class="sorgula-btn">Sorgula</button>
     </div>
     <div id="sonucAlani"></div>
     <div id="haritaAlani"></div>
@@ -43,83 +49,68 @@
     let tumMusteriler = [];
     let harita = null;
 
-    // Veriyi çek
     Papa.parse(veriDosyasiURL, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function(results) {
-            tumMusteriler = results.data;
-            console.log("Veri yüklendi:", tumMusteriler.length, "kayıt");
-        }
+        download: true, header: true, skipEmptyLines: true,
+        complete: function(results) { tumMusteriler = results.data; }
     });
 
     function sorgula() {
         const arama = document.getElementById('musteriKodu').value.trim().toUpperCase();
-        if(!arama) return;
-
-        const bulunanlar = tumMusteriler.filter(m => 
-            String(m['Müşteri Kodu']).includes(arama) || 
-            String(m['Müşteri Adı']).toUpperCase().includes(arama)
-        );
+        const bulunanlar = tumMusteriler.filter(m => String(m['Müşteri Kodu']).includes(arama) || String(m['Müşteri Adı']).toUpperCase().includes(arama));
 
         if (bulunanlar.length === 1) {
             detayGoster(bulunanlar[0]);
         } else if (bulunanlar.length > 1) {
-            let liste = '<div style="margin-top:20px;"><strong>Birden fazla sonuç bulundu:</strong><ul style="list-style:none; padding:0; margin-top:10px;">';
-            bulunanlar.slice(0, 10).forEach(m => {
-                liste += `<li style="padding:12px; background:#fff; border:1px solid #ddd; margin-bottom:5px; border-radius:8px; cursor:pointer;" onclick="hizliSec('${m['Müşteri Kodu']}')">📍 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
+            let html = '<div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:10px;"><strong>Sonuçlar:</strong><ul style="list-style:none; padding:0; margin:10px 0 0 0;">';
+            bulunanlar.forEach(m => {
+                html += `<li style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="hizliSec('${m['Müşteri Kodu']}')">🔹 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
             });
-            document.getElementById('sonucAlani').innerHTML = liste + '</ul></div>';
-            document.getElementById('haritaAlani').style.display = 'none';
-        } else {
-            document.getElementById('sonucAlani').innerHTML = '<p style="color:red; text-align:center;">Müşteri bulunamadı.</p>';
+            document.getElementById('sonucAlani').innerHTML = html + '</ul></div>';
         }
     }
 
-    function hizliSec(kod) {
-        document.getElementById('musteriKodu').value = kod;
-        sorgula();
-    }
+    function hizliSec(kod) { document.getElementById('musteriKodu').value = kod; sorgula(); }
 
     function detayGoster(m) {
         const mKodu = m['Müşteri Kodu'];
-        const mAdi = m['Müşteri Adı'];
-        const bakiye = m['Bakiye'] || "0,00"; // Ham metni al
-        
+        const bakiyeHam = m['Bakiye'] ? String(m['Bakiye']).trim() : "0,00";
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
+
+        // Renk mantığı (Sadece görsel)
+        const renk = bakiyeHam.startsWith('-') ? 'green' : 'red';
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
                 <tr>
-                    <th>Rapor İşlemleri</th>
+                    <th>İşlemler</th>
                     <td>
                         <div class="btn-group">
-                            <button onclick="raporAc('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">Excel Ekstre</button>
-                            <button onclick="raporAc('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">PDF Ekstre</button>
-                            <button onclick="detayAc('${mKodu}')" class="action-btn detay-btn">Detaylı Rapor</button>
+                            <button onclick="linkAc('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">Excel</button>
+                            <button onclick="linkAc('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">PDF</button>
+                            <button onclick="detayAc('${mKodu}')" class="action-btn detay-btn">Detay</button>
                         </div>
                     </td>
                 </tr>
-                <tr><th>Müşteri Kodu</th><td><strong>${mKodu}</strong></td></tr>
-                <tr><th>Müşteri Adı</th><td><strong>${mAdi}</strong></td></tr>
-                <tr><th>Güncel Bakiye</th><td class="bakiye-kutusu">${bakiye} TL</td></tr>
+                <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
+                <tr>
+                    <th>Bakiye</th>
+                    <td>
+                        <pre class="bakiye-metin" style="color:${renk}">${bakiyeHam} TL</pre>
+                    </td>
+                </tr>
             </table>`;
         
-        // Harita gösterimi
-        if (!isNaN(lat) && !isNaN(lon) && lat !== 0) {
+        if (!isNaN(lat) && lat !== 0) {
             document.getElementById('haritaAlani').style.display = 'block';
             if (harita) harita.remove();
-            harita = L.map('haritaAlani').setView([lat, lon], 16);
+            harita = L.map('haritaAlani').setView([lat, lon], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
-            L.marker([lat, lon]).addTo(harita).bindPopup(mAdi).openPopup();
-        } else {
-            document.getElementById('haritaAlani').style.display = 'none';
+            L.marker([lat, lon]).addTo(harita).bindPopup(m['Müşteri Adı']).openPopup();
         }
     }
 
-    function raporAc(kod, mod) {
+    function linkAc(kod, mod) {
         const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?reportId=31885200&ReportTypeId=2&filters=0;134000428026|2;${kod}|1;161|3;01.01.2026|4;31.12.2026|5;|6;|7;&RoleId=134053451661&LanguageId=1&UserId=134053530632&Mode=${mod}&Token=83b27236-1b41-4ea7-84fb-95467bee94a0`;
         window.open(url, '_blank');
     }
@@ -129,6 +120,5 @@
         window.open(url, '_blank');
     }
 </script>
-
 </body>
 </html>
