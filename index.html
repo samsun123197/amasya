@@ -13,15 +13,17 @@
         .search-section { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
         input[type="text"] { padding: 12px; width: 60%; border-radius: 8px; border: 1px solid #ddd; }
         button.sorgula-btn { padding: 12px 25px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-group { display: flex; gap: 8px; }
-        .action-btn { border: none; padding: 10px 15px; cursor: pointer; border-radius: 6px; font-weight: bold; color: white; text-decoration: none; font-size: 13px; }
+        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .action-btn { border: none; padding: 10px 15px; cursor: pointer; border-radius: 6px; font-weight: bold; color: white; text-decoration: none; font-size: 13px; display: inline-flex; align-items: center; }
         .excel-btn { background-color: #217346; }
         .pdf-btn { background-color: #d32f2f; }
-        .satis-btn { background-color: #00897b; }
+        .detay-btn { background-color: #007bff; }
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
         th { background-color: #f8f9fa; width: 30%; }
-        #haritaAlani { height: 400px; margin-top: 20px; border-radius: 12px; display: none; }
+        #haritaAlani { height: 400px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; }
+        .musteri-listesi { list-style: none; padding: 0; }
+        .musteri-listesi li { padding: 12px; background: #fff; border: 1px solid #eee; margin-bottom: 5px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -49,7 +51,22 @@
     function sorgula() {
         const input = document.getElementById('musteriKodu').value.trim().toUpperCase();
         const sonuclar = tumMusteriler.filter(m => String(m['Müşteri Kodu']).includes(input) || String(m['Müşteri Adı']).toUpperCase().includes(input));
-        if (sonuclar.length === 1) detayGoster(sonuclar[0]);
+        
+        if (sonuclar.length === 1) {
+            detayGoster(sonuclar[0]);
+        } else if (sonuclar.length > 1) {
+            let listHtml = `<ul class="musteri-listesi">`;
+            sonuclar.forEach(m => {
+                listHtml += `<li onclick="hizliSec('${m['Müşteri Kodu']}')">📌 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
+            });
+            document.getElementById('sonucAlani').innerHTML = listHtml + '</ul>';
+            document.getElementById('haritaAlani').style.display = 'none';
+        }
+    }
+
+    function hizliSec(kod) {
+        document.getElementById('musteriKodu').value = kod;
+        sorgula();
     }
 
     function detayGoster(m) {
@@ -59,23 +76,29 @@
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
-                <tr><th>Raporlar</th><td>
-                    <div class="btn-group">
-                        <button onclick="ekstreIndir('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">Ekstre (Excel)</button>
-                        <button onclick="ekstreIndir('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">Ekstre (PDF)</button>
-                        <button onclick="satisDetayIndir('${mKodu}')" class="action-btn satis-btn">Satış Detay (PDF)</button>
-                    </div>
-                </td></tr>
+                <tr>
+                    <th>Raporlar</th>
+                    <td>
+                        <div class="btn-group">
+                            <button onclick="ekstreIndir('${mKodu}', 'ExportToExcel')" class="action-btn excel-btn">📊 Ekstre Excel</button>
+                            <button onclick="ekstreIndir('${mKodu}', 'ExportToPDF')" class="action-btn pdf-btn">📄 Ekstre PDF</button>
+                            <button onclick="ozelDetayGor('${mKodu}')" class="action-btn detay-btn">🔍 Detay Gör</button>
+                        </div>
+                    </td>
+                </tr>
                 <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
-                <tr><th>Bakiye</th><td><b>${m['Bakiye']} TL</b></td></tr>
+                <tr><th>Bakiye</th><td><b style="color:${parseFloat(m['Bakiye']) > 0 ? 'red' : 'green'}">${m['Bakiye']} TL</b></td></tr>
+                <tr><th>Harita</th><td><a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank">Google Haritalarda Aç</a></td></tr>
             </table>`;
         
-        if (lat) {
+        if (!isNaN(lat) && lat !== 0) {
             document.getElementById('haritaAlani').style.display = 'block';
             if (harita) harita.remove();
             harita = L.map('haritaAlani').setView([lat, lon], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
-            L.marker([lat, lon]).addTo(harita);
+            L.marker([lat, lon]).addTo(harita).bindPopup(m['Müşteri Adı']).openPopup();
+        } else {
+            document.getElementById('haritaAlani').style.display = 'none';
         }
     }
 
@@ -84,9 +107,9 @@
         window.open(url, '_blank');
     }
 
-    // YENİ DENEME: Tırnak işaretlerini tamamen kaldırarak veya standart tek tırnakla deniyoruz
-    function satisDetayIndir(kod) {
-        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE('20260101','YYYYMMDD')|1;TO_DATE('20261231','YYYYMMDD')|2;134010607746|13;|14;|15;|6;|10;'${kod}'|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
+    function ozelDetayGor(kod) {
+        // Senin verdiğin orijinal link, sadece müşteri kodu kısmı dinamik
+        const url = `https://vp.golfdondurma.com.tr/SAASReport/ReportView.aspx?CubeReportId=350012883&Values=0;TO_DATE(\`20260101\`,\`YYYYMMDD\`)|1;TO_DATE(\`20261231\`,\`YYYYMMDD\`)|2;134010607746|13;|14;|15;|6;|10;\`${kod}\`|19;(-1,1927425,597953372,964276816,102319271251,103567574790)|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;|;&RoleId=134053451661&LanguageId=1&UserId=134053530632&ReportTypeId=1&RW=350012895,350012886,350012896,104201257687,104201257688,350012887,350012888&CL=&DT=133015712793,350012899&Mode=ExportToPDF&Token=e848a86f-4f25-4077-8d85-f864885d0c04`;
         window.open(url, '_blank');
     }
 </script>
