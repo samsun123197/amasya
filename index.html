@@ -21,9 +21,8 @@
         table { width: 100%; border-collapse: collapse; margin: 20px 0; }
         th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
         th { background-color: #f8f9fa; width: 30%; }
+        td.bakiye-cell { font-size: 18px; white-space: nowrap; } /* Sığmama sorununu önler */
         #haritaAlani { height: 400px; margin-top: 20px; border-radius: 12px; display: none; border: 1px solid #ddd; }
-        .musteri-listesi { list-style: none; padding: 0; }
-        .musteri-listesi li { padding: 12px; background: #fff; border: 1px solid #eee; margin-bottom: 5px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -55,28 +54,31 @@
         if (sonuclar.length === 1) {
             detayGoster(sonuclar[0]);
         } else if (sonuclar.length > 1) {
-            let listHtml = `<ul class="musteri-listesi">`;
+            let listHtml = `<ul style="list-style:none; padding:0;">`;
             sonuclar.forEach(m => {
-                listHtml += `<li onclick="hizliSec('${m['Müşteri Kodu']}')">📌 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
+                listHtml += `<li style="padding:10px; border:1px solid #eee; margin-bottom:5px; cursor:pointer; border-radius:8px;" onclick="hizliSec('${m['Müşteri Kodu']}')">📌 ${m['Müşteri Kodu']} - ${m['Müşteri Adı']}</li>`;
             });
             document.getElementById('sonucAlani').innerHTML = listHtml + '</ul>';
-            document.getElementById('haritaAlani').style.display = 'none';
         }
     }
 
-    function hizliSec(kod) {
-        document.getElementById('musteriKodu').value = kod;
-        sorgula();
-    }
+    function hizliSec(kod) { document.getElementById('musteriKodu').value = kod; sorgula(); }
 
     function detayGoster(m) {
         const mKodu = m['Müşteri Kodu'];
         const lat = parseFloat(String(m['Enlem']).replace(',', '.'));
         const lon = parseFloat(String(m['Boylam']).replace(',', '.'));
         
-        // Bakiye formatlama (Nokta ve virgül ayrımı için)
-        const hamBakiye = parseFloat(String(m['Bakiye']).replace('.', '').replace(',', '.'));
-        const formatliBakiye = isNaN(hamBakiye) ? m['Bakiye'] : hamBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        // --- Gelişmiş Bakiye İşleme ---
+        let hamVeri = String(m['Bakiye']).replace(/\s/g, ''); // Tüm boşlukları temizle
+        let sayisalBakiye = parseFloat(hamVeri.replace('.', '').replace(',', '.'));
+        
+        let formatliBakiye;
+        if (!isNaN(sayisalBakiye)) {
+            formatliBakiye = sayisalBakiye.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
+        } else {
+            formatliBakiye = m['Bakiye']; // Eğer sayı değilse Excel'deki halini göster
+        }
 
         document.getElementById('sonucAlani').innerHTML = `
             <table>
@@ -91,7 +93,7 @@
                     </td>
                 </tr>
                 <tr><th>Müşteri</th><td><b>${mKodu} - ${m['Müşteri Adı']}</b></td></tr>
-                <tr><th>Bakiye</th><td><b style="color:${hamBakiye > 0 ? 'red' : 'green'}">${formatliBakiye} TL</b></td></tr>
+                <tr><th>Bakiye</th><td class="bakiye-cell"><b style="color:${sayisalBakiye > 0 ? 'red' : 'green'}">${formatliBakiye}</b></td></tr>
             </table>`;
         
         if (!isNaN(lat) && lat !== 0) {
@@ -100,8 +102,6 @@
             harita = L.map('haritaAlani').setView([lat, lon], 15);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(harita);
             L.marker([lat, lon]).addTo(harita).bindPopup(m['Müşteri Adı']).openPopup();
-        } else {
-            document.getElementById('haritaAlani').style.display = 'none';
         }
     }
 
